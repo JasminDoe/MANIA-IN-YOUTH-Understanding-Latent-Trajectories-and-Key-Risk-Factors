@@ -1,0 +1,538 @@
+---
+title: "Mania_Modelling"
+author: "by_Jasmin_Doenicke"
+date: "Step2"
+output:
+  html_document:
+    toc: yes
+    theme: united
+  word_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+# STARTER CODE
+```{r, warning=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+
+# Load Demographic data
+```{r, warning=FALSE}
+#load libraries
+library(tidyverse)
+
+#set working directory
+setwd("E:/data")
+
+
+#1. demographics
+demo<-read_csv("E:/release_5.1/core/abcd-general/abcd_y_lt.csv")
+demo <- demo %>% select(src_subject_id,eventname,site_id_l,rel_family_id,rel_birth_id,interview_age)
+```
+In the demographic dataset, there now is Subject-ID, timepoint, site, age, and family variables.
+
+```{r, warning=FALSE}
+#2. sex assigned at birth
+sex<-read_csv("E:/release_5.1/core/gender-identity-sexual-health/gish_p_gi.csv")
+sex<-sex %>% select(src_subject_id,demo_sex_v2) %>% na.omit()
+#merge
+data<-inner_join(demo,sex)
+```
+This adds sex into the demographic dataset.
+
+```{r, warning=FALSE}
+#3. assign visit variable
+data$visit <- ifelse(data$eventname == "baseline_year_1_arm_1", 0,
+                     ifelse(data$eventname == "1_year_follow_up_y_arm_1", 1, 
+                            ifelse(data$eventname == "2_year_follow_up_y_arm_1", 2, 
+                                   ifelse(data$eventname == "3_year_follow_up_y_arm_1",3,
+                                          ifelse(data$eventname == "4_year_follow_up_y_arm_1",4,NA)))))
+#remove time-points we don't need (6month, 18month etc)
+data<-data %>% filter(!is.na(visit))
+```
+This adds visit into the demographic dataset.
+
+```{r, warning=FALSE}
+#4. Site
+#convert site to numeric
+data<-data %>% separate_wider_regex(site_id_l, patterns=c(site="[a-z]+",num="\\d+")) %>%
+  mutate(num=as.numeric(num)) %>% select(!site) %>%rename("site"=num)
+
+
+##change site data to fill from first entry
+data<-data %>% group_by(src_subject_id) %>%
+  mutate(site2=first(site,na_rm = T)) %>%
+  select(!site) %>%
+  rename("site"=site2) %>%
+  ungroup()
+```
+This adds site into the demographic dataset.
+
+```{r, warning=FALSE}
+#5. change rel_family_id and rel_birth_id to fill from first entry
+data<-data %>% 
+  group_by(src_subject_id) %>%
+  mutate(rel_family_id = first(rel_family_id),
+         rel_birth_id=first(rel_birth_id)) %>% 
+  ungroup()
+
+#6. Race
+#load data
+race<-read_csv("E:/release_5.1/core/abcd-general/abcd_p_demo.csv")
+#create new ethnicity factor variable
+race<-race %>%
+  mutate(ethnicity=factor(demo_ethn_v2,levels=c(2,1),
+                         labels=c("not_hispanic","hispanic")))
+```
+
+This adds ethnicity into the demographic dataset.
+
+```{r, warning=FALSE}
+#create mixed-race variable
+race<-race %>%
+  filter(!is.na(demo_race_a_p___10)) %>%
+  select(src_subject_id,ethnicity,starts_with("demo_race_a"))
+
+race<-race %>% rowwise() %>%
+  mutate(total=sum(c_across(demo_race_a_p___10:demo_race_a_p___0))) %>% ungroup() %>%
+  mutate(multi=if_else(total>1,1,0))
+
+#create levels for each race category
+race<-race %>% mutate(
+  race=case_when(
+    multi==0&demo_race_a_p___10==1~1,
+    multi==0&demo_race_a_p___11==1~2, 
+    multi==0&(demo_race_a_p___12==1|demo_race_a_p___13==1)~3,
+    multi==0&(demo_race_a_p___14==1|demo_race_a_p___15==1|demo_race_a_p___16==1|demo_race_a_p___17==1)~4,
+    multi==0&(demo_race_a_p___18==1|demo_race_a_p___19==1|demo_race_a_p___20==1|demo_race_a_p___21==1|demo_race_a_p___22==1|demo_race_a_p___23==1|demo_race_a_p___24==1)~5,
+    multi==0&(demo_race_a_p___25==1|demo_race_a_p___77|demo_race_a_p___99==1)~6,
+    multi==1~6))
+#convert to factor
+race<- race %>% mutate(race=factor(race,levels=c(1,2,3,4,5,6),
+                                   labels=c('White','Black/African American','American Indian/Alaskan',
+                                            'Pacific','Asian','Other/Multiple')))
+#merge with data
+race<-race %>% select(src_subject_id,race,ethnicity)
+merge<-full_join(data,race)
+data<-merge
+```
+
+This adds race into the demographic dataset. To do so, all the self-reported race options were sorted into six broader categories.
+
+
+```{r, warning=FALSE}
+data_demographics = data
+#save as rds file
+
+data_demographics <- data_demographics %>% mutate(id = as.numeric(as.factor(src_subject_id)))
+#save(data_demographics,file="E:/data/20240506_demographics.rdata")
+```
+The demographic dataset is done! It gets saved in the "data" folder, so it can get loaded up quickly later if needed.
+
+
+# Merging Demographics and Mania
+Clearing the R-Studio environment is possible here, if needed! 
+```{r, warning=FALSE}
+setwd("E:")
+
+#load libraries
+library(tidyverse)
+
+load("E:/data/20240506_dataGBI.rdata")
+load("E:/data/20240506_demographics.rdata")
+```
+This loads the mania-data and the demographics data from the "data" folder.
+
+```{r, warning=FALSE}
+#GBI_demographics = merge(data_demographics, data_GBI, on='src_subject_id', how='inner')
+#save(GBI_demographics,file="E:/data/20240507_GBI_demographics.rdata")
+```
+
+This merges the mania data with the demographics data and saves it into a new file.
+
+```{r}
+load("E:/data/GBI_demographics.rdata")
+rm(data, data_GBI, demo, merge, race, sex)
+```
+
+To make the code run smoother, clean all previous dataframes. Only the newly merged mania & demographics dataset is necessary!
+
+# Plotting
+
+A Geom Density Plot will be used to check the smoothed probability density function of a continuous variable (in this case, mania symptoms). It estimates the distribution of the data using kernel density estimation, which smooths the data to show overall patterns without relying on binning (like histograms).
+
+##  for all Test Subjects
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled)))+
+                ggtitle("Density Plot of all participants") + # for the main title 
+                xlab("GBI score") # for the x axis label
+                
+```
+The mania data is distributed from 0 to 30, which makes sense, because that's the range of the P-GBI-10M. Most children seem to have very low values - below five.
+The data is "zero-inflated". This is something to account for in later analyses.
+
+## Plot by Sex
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled)))+
+                facet_wrap(~demo_sex_v2) + #creates a separate plot for each level of this variable
+                ggtitle("Density Plot by Sex") + # for the main title 
+                xlab("GBI score") # + # for the x axis label
+              
+```
+
+Sex assigned at birth is plotted. Males (1) and Females (2) seem to have very similar distributions of the Mania-Score.
+
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled), group = demo_sex_v2))+
+                ggtitle("Density Plot by Sex") + # for the main title 
+                xlab("GBI score") + 
+                theme_bw()
+```
+
+When overlaying the plots for males and females, both are indeed very similarly distributed!
+
+## Plot by Visit
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled)))+
+                facet_wrap(~visit) + #creates a separate plot for each level of this variable
+                ggtitle("Density Plot by Visit") + # for the main title 
+                xlab("GBI score") # for the x axis label
+                
+```
+
+Mania by visit is plotted. The distributions again look very similar.
+
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled), group = visit))+
+                ggtitle("Density Plot by Visit") + # for the main title 
+                xlab("GBI score") + 
+                theme_bw()
+```
+
+When overlaying plots, they are indeed very similar.
+
+## Plot by Site
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled)))+
+                facet_wrap(~site) + #creates a separate plot for each level of this variable
+                ggtitle("Density Plot by Site") + # for the main title 
+                xlab("GBI score") # for the x axis label
+                
+```
+
+Mania by site is plotted. There are 21 sites in the USA, where data from the ABCD-dataset is being recorded. The distributions again look similar.
+
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled), group = site))+
+                ggtitle("Density Plot by Site") + # for the main title 
+                xlab("GBI score") + 
+                theme_bw()
+```
+
+There is some variation, but overall the distribution is quite similar.
+
+## Plot by Race
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled)))+
+                facet_wrap(~race) + #creates a separate plot for each level of this variable
+                ggtitle("Density Plot by Race") + # for the main title 
+                xlab("GBI score") # for the x axis label
+                
+```
+Smaller race categories (Pacific, American Indian/ Alaskan) have less smooth distributions. Overall, the distributions are again very similar.
+
+
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled), group = race))+
+                ggtitle("Density Plot by Race") + # for the main title 
+                xlab("GBI score") + 
+                theme_bw()
+```
+
+Very similar distributions.
+
+## Plot by Ethnicity
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled)))+
+                facet_wrap(~ethnicity) + #creates a separate plot for each level of this variable
+                ggtitle("Density Plot by Ethnicity") + # for the main title 
+                xlab("GBI score") # for the x axis label
+                
+```
+
+Very similar distributions.
+
+```{r, warning=FALSE}
+GBI_demographics %>% 
+  ggplot(aes(x=pgbi_p_ss_score))+
+  geom_density(position="identity",bw=0.5,
+               aes(y=after_stat(scaled), group = ethnicity))+
+                ggtitle("Density Plot by Ethnicity") + # for the main title 
+                xlab("GBI score") + 
+                theme_bw()
+```
+
+Very similar distributions.
+
+# Test Association
+
+Since the data is zero-inflated, no regular linear regression can be used.
+Using a poisson or negative binomial models is required.
+
+
+## Prepare Data
+```{r, warning=FALSE}
+# make factors
+GBI_demographics$demo_sex_v2[GBI_demographics$demo_sex_v2 == 3] <-1
+GBI_demographics <- GBI_demographics %>% mutate(demo_sex_v2 = as.factor(demo_sex_v2))
+GBI_demographics <- GBI_demographics %>% mutate(site = as.factor(site))
+
+
+#libraries
+library(tidyverse)
+library(glmmTMB) #if running negative binomial models
+library(performance)
+library(parameters)
+library(emmeans)
+
+##Set ggplot theme
+theme_set(theme_bw())
+library(performance)
+```
+
+This helps understanding how sex (demo_sex_v2) affects mania (pgbi_p_ss_score), while accounting for hierarchical structures (random effects: site/rel_family_id/id).
+This helps determine whether sex has a significant effect on the mania-score and how strong that effect is.
+
+NOTE: Since Mplus automatically corrects for the effect of sex (or other demographic variables) on mania, these next steps are not strictly necessary.
+
+## Association with Sex
+
+Poisson model: Fits a Poisson regression model using glmmTMB.
+This model assumes the response variable follows a Poisson distribution.
+```{r, warning=FALSE}
+# model <- glmmTMB(pgbi_p_ss_score ~ demo_sex_v2+ (1 | site/rel_family_id/id),
+#                  data = GBI_demographics,
+#                  ziformula=~1,family=poisson) # Zero-inflation formula is specified
+# summary(model) # Outputs model summary with coefficient estimates
+# check_overdispersion(model) # Checks for overdispersion (variance > mean)
+```
+
+Negative Binomial model: Tests for overdispersion handling.
+Used when Poisson is overdispersed (variance >> mean).
+```{r, warning=FALSE}
+# model <- glmmTMB(pgbi_p_ss_score ~ demo_sex_v2+ (1 | site/rel_family_id/id),
+#                  data = GBI_demographics,
+#                  ziformula=~1,family=nbinom2) # Negative binomial distribution
+# summary(model) # Outputs model summary
+# check_overdispersion(model) # Checks if the model improves over Poisson
+```
+
+Generalized Poisson model: Another alternative for count data.
+Useful if variance is still problematic with Negative Binomial.
+```{r, warning=FALSE}
+# model <- glmmTMB(pgbi_p_ss_score ~ demo_sex_v2+ (1 | site/rel_family_id/id),
+#                  data = GBI_demographics,
+#                  ziformula=~1,family=compois) # COM-Poisson distribution
+# summary(model) # Outputs model summary
+# check_overdispersion(model) # Checks model fit and dispersion
+```
+
+Once overdispersion is checked, the best model is chosen.
+In this case: Poisson.
+```{r, warning=FALSE}
+# library(lme4) # Load lme4 package for mixed-effects models
+# model <- glmer(pgbi_p_ss_score ~ demo_sex_v2+ (1 | site/rel_family_id/id),
+#                  data = GBI_demographics,family=poisson) # Poisson model using glmer
+# summary(model) # Outputs model summary
+# check_overdispersion(model) # Double-checks for overdispersion
+```
+
+Test the best model!!!
+Post-hoc tests: effect size estimation.
+```{r, warning=FALSE}
+# comps <- emmeans(model,"demo_sex_v2") # Estimated marginal means for demo_sex_v2
+
+# # Calculate effect size to measure the strength of group differences
+# effect <- eff_size(comps,sigma=sigma(model),edf=df.residual(model))
+
+# # Plot the effect size to visualize the magnitude of differences
+# plot(effect) 
+# # Plot pairwise comparisons between groups
+# plot(comps)
+
+# # Understand the effect using visualizations
+# effect_plot(model, pred = "demo_sex_v2") # Plot main effects of demo_sex_v2
+# effect_plot(model, pred = "demo_sex_v2", plot.points = TRUE, jitter = .2) # Adds individual points with jitter
+# plot_summs(model) # Summary plot of model coefficients
+```
+
+Summarizing demographic data by sex.
+```{r, warning=FALSE}
+ GBI_demographics %>%
+   filter(demo_sex_v2==1 | demo_sex_v2 ==2) %>% # Selects only two categories of demo_sex_v2
+   group_by(demo_sex_v2) %>% # Groups data by sex 
+   summarise(n = n()) %>% # Counts number of observations per group
+   mutate(freq_percent = n / sum(n)*100) # Computes percentage frequency per category
+```
+
+## Association with Site
+
+Poisson model: Fits a Poisson regression model using glmer.
+This model assumes the response variable follows a Poisson distribution.
+```{r, warning=FALSE}
+# model <- glmer(pgbi_p_ss_score ~ site+ (1 | site/rel_family_id/id), 
+#                  data = GBI_demographics,family=poisson)
+# summary(model) # Outputs model summary with coefficient estimates
+
+# check_overdispersion(model) # Checks for overdispersion (variance > mean)
+```
+
+Post-hoc tests: effect size estimation.
+```{r, warning=FALSE}
+# comps <- emmeans(model,"site") # Estimated marginal means for site
+
+# # Calculate effect size to measure the strength of group differences
+# effect <- eff_size(comps,sigma=sigma(model),edf=df.residual(model))
+
+# # Plot the effect size to visualize the magnitude of differences
+# plot(effect) 
+# # Plot pairwise comparisons between groups
+# plot(comps)
+```
+
+Understand the effect using visualizations.
+```{r, warning=FALSE}
+# effect_plot(model, pred = "site") # Plot main effects of site
+# effect_plot(model, pred = "site", plot.points = TRUE, jitter = .2) # Adds individual points with jitter
+# plot_summs(model) # Summary plot of model coefficients
+```
+
+Summarizing demographic data by site and race.
+```{r, warning=FALSE}
+GBI_demographics %>%
+  filter(site==15) %>% # Filters only for site 15; Change (site==15) to have a look at distributions of other sites that may be of interest.
+  group_by(site,race) %>% # Groups data by site and race; Change race to another variable of interest (e.g. sex) if you are interested in the sex-distributions by site.
+  summarise(n = n()) %>% # Counts number of observations per group
+  mutate(freq_percent = n / sum(n)*100) # Computes percentage frequency per category
+```
+
+
+
+
+
+## Association with Race
+
+Loading and preparing the dataset
+```{r, warning=FALSE}
+# setwd("E:/data") # Set working directory
+# load("GBI_demographics.rdata") # Load the dataset
+```
+
+Fitting a Poisson model using glmer to assess the effect of race on mania
+```{r, warning=FALSE}
+# library("lme4") # Load lme4 package for mixed-effects models
+# model <- glmer(pgbi_p_ss_score ~ race+ (1 | site/rel_family_id/id), 
+#                  data = GBI_demographics,family=poisson) # Poisson model
+# summary(model) # Outputs model summary
+
+# check_overdispersion(model) # Checks for overdispersion
+```
+
+Post-hoc tests: effect size estimation.
+```{r, warning=FALSE}
+# comps <- emmeans(model,"race") # Estimated marginal means for race
+
+# # Calculate effect size to measure the strength of group differences
+# effect <- eff_size(comps,sigma=sigma(model),edf=df.residual(model))
+
+# # Plot the effect size to visualize the magnitude of differences
+# plot(effect) 
+# # Plot pairwise comparisons between groups
+# plot(comps)
+```
+
+Understanding the effect using visualizations
+```{r, warning=FALSE}
+# library("jtools") # Load jtools for visualization functions
+# effect_plot(model, pred = "race") # Plot main effects of race
+# effect_plot(model, pred = "race", plot.points = TRUE, jitter = .2) # Adds individual points with jitter
+# plot_summs(model) # Summary plot of model coefficients
+```
+
+Summarizing demographic data by race
+```{r, warning=FALSE}
+GBI_demographics %>%
+  filter() %>% # Apply filters if needed
+  group_by(race) %>% # Groups data by race
+  summarise(n = n()) %>% # Counts number of observations per group
+  mutate(freq_percent = n / sum(n)*100) # Computes percentage frequency per category
+```
+This demonstrates that our dataset is broadly representative of the US-population when it comes to race.
+
+## Association with Ethnicity
+
+```{r, warning=FALSE}
+# model2 <- glmer(pgbi_p_ss_score ~ ethnicity+ (1 | site/rel_family_id/id), 
+#                  data = GBI_demographics,family=poisson) # Poisson model for ethnicity
+# summary(model) # Outputs model summary
+```
+
+Post-hoc tests: effect size estimation
+```{r, warning=FALSE}
+# comps <- emmeans(model,"ethnicity") # Estimated marginal means for ethnicity
+
+# # Calculate effect size to measure the strength of group differences
+# effect <- eff_size(comps,sigma=sigma(model),edf=df.residual(model))
+
+# # Plot the effect size to visualize the magnitude of differences
+# plot(effect) 
+# # Plot pairwise comparisons between groups
+# plot(comps)
+```
+
+Understanding the effect using visualizations
+```{r, warning=FALSE}
+# library("jtools") # Load jtools for visualization functions
+# effect_plot(model2, pred = "ethnicity") # Plot main effects of ethnicity
+# effect_plot(model2, pred = "ethnicity", plot.points = TRUE, jitter = .2) # Adds individual points with jitter
+# plot_summs(model2) # Summary plot of model coefficients
+```
+
+
+
+
+
+
+

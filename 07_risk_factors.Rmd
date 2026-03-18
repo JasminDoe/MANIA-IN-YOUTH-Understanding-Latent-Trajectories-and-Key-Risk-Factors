@@ -1,0 +1,1213 @@
+---
+title: "Mania_Modelling"
+author: "by_Jasmin_Doenicke"
+date: "Step7"
+output:
+  html_document:
+    toc: yes
+    theme: united
+  word_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+# STARTER Code
+```{r setup, error = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "E:")
+```
+
+```{r, error=FALSE, message = FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+```{r, error = FALSE, message = FALSE}
+library(tidyverse)
+library(naniar)
+library(officer)
+library(janitor)
+
+
+#set workind directory
+setwd("E:")
+
+#set theme
+theme_set(theme_bw())
+```
+
+
+
+# PHYSICAL HEALTH
+## Sleep 
+```{r, error=FALSE}
+sleep <- read_csv("E:/release_5.1/core/physical-health/ph_p_sds.csv")
+sleep = subset(sleep, select = c("src_subject_id", "eventname", "sds_p_ss_total", "sds_p_ss_dims",
+"sds_p_ss_sbd", "sds_p_ss_da", "sds_p_ss_swtd", "sds_p_ss_does", "sds_p_ss_shy"))
+
+# select only baseline
+unique(sleep$eventname)
+sleep = subset(sleep, sleep$eventname == "baseline_year_1_arm_1")
+```
+
+### PLOT Total Sleep Score
+```{r, error=FALSE}
+# plot
+ggplot(sleep, aes(x = sds_p_ss_total))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Sleep disturbances / Recent life events involving sleep disruption")
+
+# mean and range
+mean(na.omit(sleep$sds_p_ss_total))
+sd(na.omit(sleep$sds_p_ss_total))
+table(sleep$sds_p_ss_total)
+```
+
+### PLOT SDSC - Disorders of Initiating and Maintaining Sleep (DIMS)
+```{r, error=FALSE}
+# plot
+ggplot(sleep, aes(x = sds_p_ss_dims))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Sleep - Disorders of Initiating and Maintaining Sleep (DIMS)")
+
+# mean and range
+mean(na.omit(sleep$sds_p_ss_dims))
+sd(na.omit(sleep$sds_p_ss_dims))
+table(sleep$sds_p_ss_dims)
+```
+
+### PLOT SDSC -  Sleep Breathing disorders (SBD)
+```{r, error=FALSE}
+# plot
+ggplot(sleep, aes(x = sds_p_ss_sbd))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Sleep -  Sleep Breathing disorders (SBD)")
+
+# mean and range
+mean(na.omit(sleep$sds_p_ss_sbd))
+sd(na.omit(sleep$sds_p_ss_sbd))
+table(sleep$sds_p_ss_sbd)
+```
+
+### PLOT SDSC - Disorder of Arousal (DA)
+```{r, error=FALSE}
+# plot
+ggplot(sleep, aes(x = sds_p_ss_da))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Sleep - Disorder of Arousal (DA)")
+
+# mean and range
+mean(na.omit(sleep$sds_p_ss_da))
+sd(na.omit(sleep$sds_p_ss_da))
+table(sleep$sds_p_ss_da)
+```
+
+### PLOT SDSC - Sleep-Wake transition Disorders (SWTD) 
+```{r, error=FALSE}
+# plot
+ggplot(sleep, aes(x = sds_p_ss_swtd))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Sleep - Sleep-Wake transition Disorders (SWTD)")
+
+# mean and range
+mean(na.omit(sleep$sds_p_ss_swtd))
+sd(na.omit(sleep$sds_p_ss_swtd))
+table(sleep$sds_p_ss_swtd)
+```
+
+### PLOT SDSC - Disorders of Excessive Somnolence
+```{r, error=FALSE}
+# plot
+ggplot(sleep, aes(x = sds_p_ss_does))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Sleep - Disorders of Excessive Somnolence")
+
+# mean and range
+mean(na.omit(sleep$sds_p_ss_does))
+sd(na.omit(sleep$sds_p_ss_does))
+table(sleep$sds_p_ss_does)
+```
+
+### PLOT SDSC - Sleep Hyperhydrosis
+```{r, error=FALSE}
+# plot
+ggplot(sleep, aes(x = sds_p_ss_shy))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Sleep - Sleep Hyperhydrosis")
+
+# mean and range
+mean(na.omit(sleep$sds_p_ss_shy))
+sd(na.omit(sleep$sds_p_ss_shy))
+table(sleep$sds_p_ss_shy)
+```
+
+
+
+## Irritable Bowel Syndrome
+```{r, error=FALSE, message = FALSE}
+ibs <- read_csv("E:/release_5.1/core/mental-health/mh_p_cbcl.csv")
+ibs = subset(ibs, select = c("cbcl_q49_p", "cbcl_q56c_p", "cbcl_q56f_p", "cbcl_q56g_p", "src_subject_id", "eventname")) # select necessary variables only
+ibs = subset(ibs, ibs$eventname == "baseline_year_1_arm_1") # select only baseline
+
+# create sum score
+ibs$four_sum = ibs$cbcl_q49_p + ibs$cbcl_q56c_p + ibs$cbcl_q56f_p + ibs$cbcl_q56g_p
+ibs$three_sum = ibs$cbcl_q56c_p + ibs$cbcl_q56f_p + ibs$cbcl_q56g_p
+```
+
+### PLOT 4-item IBS symptoms
+
+This is a version I did not use in the Master's thesis!
+```{r, error=FALSE}
+# plot
+ggplot(ibs, aes(x = four_sum))+
+  geom_histogram(binwidth = 1)
+
+# mean and range
+mean(na.omit(ibs$four_sum))
+sd(na.omit(ibs$four_sum))
+table(ibs$four_sum)
+```
+
+### PLOT 3-item IBS symptoms
+
+I usedthese three items for the IBS-score in the analysis, since a previous paper has done the same.
+```{r, error=FALSE}
+# plot
+ggplot(ibs, aes(x = three_sum))+
+  geom_histogram(binwidth = 1)
+
+# mean and range
+mean(na.omit(ibs$three_sum))
+sd(na.omit(ibs$three_sum))
+table(ibs$three_sum)
+```
+
+## Asthma
+```{r, error=FALSE, message = FALSE}
+ast <- read_csv("E:/release_5.1/core/physical-health/ph_p_mhx.csv")
+asthma = subset(ast, select = c("src_subject_id", "eventname", "medhx_2a"))
+asthma = subset(asthma, asthma$eventname == "baseline_year_1_arm_1") # select only baseline (other timepoints are NA anyways)
+```
+
+### PLOT Asthma
+```{r, error=FALSE}
+# plot - baseline only
+ggplot(asthma, aes(x = medhx_2a))+
+  geom_histogram(binwidth = 1) +
+  ggtitle("Asthma - Baseline Only")
+
+# plot mean and range - baseline only
+mean(na.omit(asthma$medhx_2a))
+sd(na.omit(asthma$medhx_2a))
+table(asthma$medhx_2a)
+```
+
+## Obesity
+```{r, error=FALSE, message = FALSE}
+bmi <- read_csv("E:/release_5.1/core/physical-health/ph_y_anthro.csv")
+
+# Calculate mean height and weight across measurements (alternatively: use anthroheightcalc & anthroweightcalc from dataset)
+bmi <- bmi %>% mutate(height_mean_in = rowMeans(select(bmi, c(anthro_1_height_in, anthro2heightin, anthro3heightin)), na.rm = TRUE))
+bmi <- bmi %>% mutate(weight_mean_lb = rowMeans(select(bmi, c(anthroweight1lb, anthroweight2lb, anthroweight3lb)), na.rm = TRUE))
+bmi <- bmi %>% mutate(height_cm = height_mean_in*2.54, weight_kg = weight_mean_lb*0.45359237, height_m = height_cm/100) #conversion to metric
+
+
+bmi <- bmi %>% mutate(BMI = weight_kg/(height_m^2)) #bmi calculation (kg/m2)
+bmi <- bmi %>% replace_with_na(replace = list(BMI = c('NaN'))) #replace NA
+bmi$bmiz <- scale(bmi$BMI,center=TRUE, scale=TRUE) #create bmi-z-score
+summary(bmi$bmiz) #final bmi z-score.
+
+bmi = subset(bmi, bmi$eventname == "baseline_year_1_arm_1") # select only baseline
+```
+
+### PLOT BMI Full Dataset
+```{r, error=FALSE}
+# plotting full dataset (height/cm)
+ggplot(bmi, aes(height_cm, weight_kg))+ 
+  geom_jitter(height = 2, width = 2) +
+  geom_smooth(method = lm)+
+  ggtitle("Full Baseline Dataset with Outliers")
+
+# mean and range
+mean(na.omit(bmi$BMI))
+min(na.omit(bmi$BMI))
+max(na.omit(bmi$BMI))
+```
+
+The BMI ranges from 2 to 3017! There seems to be some issues with data quality. Let's clean it up.
+
+### PLOT BMI: removing +/- 5 z-score
+```{r, error=FALSE, message = FALSE}
+bmi_5 = bmi
+
+# removing outliers
+bmi_5<-bmi_5 %>%mutate(bmiz       = if_else(bmiz       < 5,  bmiz,      NA)) # not z-score over 5
+bmi_5<-bmi_5 %>%mutate(bmiz       = if_else(bmiz       >-5,  bmiz,      NA)) # no z-score under 5
+
+# remove faulty data without bmiz (it doesnt calculate bmiz and the 4 cases must be removed by hand)
+bmi_5<-bmi_5 %>%mutate(BMI        = if_else(BMI        <1000,BMI,       NA)) # remove BMI> 1000 
+```
+
+```{r, error=FALSE}
+ggplot(bmi_5, aes(height_cm, weight_kg))+ 
+  geom_jitter(height = 2, width = 2) +
+  geom_smooth(method = lm)+
+  ylim(4, 125)+ # weight
+  xlim(80, 210)        # height
+  ggtitle("Baseline Dataset with +/-5 z-score outliers removed")
+
+# plotting BMI distribution
+ggplot(bmi_5, aes(x = BMI))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Baseline Dataset with +/-5 z-score outliers removed - BMI score")
+
+# plotting BMI z-score distribution
+ggplot(bmi_5, aes(x = bmiz))+
+  geom_histogram(binwidth = 0.05)+
+  ggtitle("Baseline Dataset with +/-5 z-score outliers removed - z score")
+
+# mean and range - BMI
+mean(na.omit(bmi_5$BMI))
+min(na.omit(bmi_5$BMI))
+max(na.omit(bmi_5$BMI))
+
+# mean and range - weight
+mean(na.omit(bmi_5$weight_kg))
+min(na.omit(bmi_5$weight_kg))
+max(na.omit(bmi_5$weight_kg))
+```
+
+There is still some unclean data, but removing those outliers would require more targeted intervention strategies. Let's try some.
+
+### PLOT BMI: removing +/- 5 z-score PLUS removing under BMI 12
+
+I did not exclude this data in my Master's thesis, as the 'lower limit of human survival' BMI of 12 is highly debated, and no universally accepted lower BMI thresholds exist, especially for children. Therefore, I retained these values for analysis. However, if you'd like to explore the impact of removing them, here is the code:
+
+```{r, error=FALSE, message = FALSE}
+# removing more outliers
+bmi_5_twelve <-bmi_5 %>%mutate(BMI       = if_else(BMI       >= 12,  BMI,      NA)) # no BMI under 12
+```
+
+```{r, error=FALSE}
+ggplot(bmi_5_twelve, aes(height_cm, weight_kg))+ 
+  geom_jitter(height = 2, width = 2) +
+  geom_smooth(method = lm)+
+  ylim(18, 125)+ # weight
+  xlim(80, 178)+      # height
+  ggtitle("Baseline Dataset with +/-5 z-score outliers and BMI < 12 removed")
+
+# plotting BMI distribution
+ggplot(bmi_5_twelve, aes(x = BMI))+
+  geom_histogram(binwidth = 1)+     
+  ggtitle("Baseline Dataset with +/-5 z-score outliers and BMI < 12 removed - BMI score")
+
+# plotting BMI z-score distribution
+ggplot(bmi_5_twelve, aes(x = bmiz))+
+  geom_histogram(binwidth = 0.05)+      
+  ggtitle("Baseline Dataset with +/-5 z-score outliers and BMI < 12 removed - z score")
+
+# mean and range - BMI
+mean(na.omit(bmi_5_twelve$BMI))
+min(na.omit(bmi_5_twelve$BMI))
+max(na.omit(bmi_5_twelve$BMI))
+
+# mean and range - Weight
+mean(na.omit(bmi_5_twelve$weight_kg))
+min(na.omit(bmi_5_twelve$weight_kg))
+max(na.omit(bmi_5_twelve$weight_kg))
+```
+
+### PLOT BMI: removing +/- 5 zscores and also all underweight children
+
+This is removing even more children, again an "underweight" BMI changes by age and gender, so this was not used for the analysis and is simply demonstrating different data cleaning options:
+
+```{r, error=FALSE, message = FALSE}
+# removing more outliers
+bmi_5_und <-bmi_5 %>%mutate(BMI       = if_else(BMI       >= 14,  BMI,      NA)) # no BMI under 14
+```
+
+```{r, error=FALSE}
+ggplot(bmi_5_und, aes(height_cm, weight_kg))+ 
+  geom_jitter(height = 2, width = 2) +
+  geom_smooth(method = lm)+
+  ylim(18, 125)+ # weight
+  xlim(80, 178)+      # height
+  ggtitle("Baseline Dataset with +/-5 z-score outliers and all underweight children removed")
+
+# plotting BMI distribution
+ggplot(bmi_5_und, aes(x = BMI))+
+  geom_histogram(binwidth = 1)+     
+  ggtitle("Baseline Dataset with +/-5 z-score outliers and all underweight children removed - BMI score")
+
+# plotting BMI z-score distribution
+ggplot(bmi_5_und, aes(x = bmiz))+
+  geom_histogram(binwidth = 0.05)+      
+  ggtitle("Baseline Dataset with +/-5 z-score outliers and all underweight children - z score")
+
+# mean and range - BMI
+mean(na.omit(bmi_5_und$BMI))
+min(na.omit(bmi_5_und$BMI))
+max(na.omit(bmi_5_und$BMI))
+
+# mean and range - Weight
+mean(na.omit(bmi_5_und$weight_kg))
+min(na.omit(bmi_5_und$weight_kg))
+max(na.omit(bmi_5_und$weight_kg))
+```
+
+
+## Birth/pregnancy complications
+
+pregnancy_cx = total sum of pregnancy complications. 
+pregnancy_binary =  (0/1) any pregnancy complications.
+
+obestric_cx = total sum of obstetric complications. 
+obestric_binary = (0/1) any birth complications.
+
+premature_binary = binary, born prematurely.
+premature_weeks = amount of weeks premature.
+
+csection_binary = (0/1) C-section.
+smallbirth = (0/1) less than 2,5kg at birth.
+
+
+For this analysis, categorical variables were used because the reported events occurred 10 years after they happened, making precise recall and continuous data reliability questionable. Categorizing the variables helps mitigate recall bias and ensures a more robust comparison across groups.
+
+```{r, error=FALSE, message = FALSE}
+baby_data <-read_csv("E:/release_5.1/core/physical-health/ph_p_dhx.csv")
+
+baby_data <- baby_data %>% filter(str_detect(eventname,'baseline')) %>%
+  select(src_subject_id,eventname, devhx_10a3_p, devhx_10b3_p, devhx_10c3_p, devhx_10d3_p, devhx_10e3_p, devhx_10f3_p, devhx_10g3_p, devhx_10h3_p, devhx_10i3_p, devhx_10j3_p, devhx_10k3_p, devhx_10l3_p,devhx_10m3_p, devhx_13_3_p, devhx_14a3_p, devhx_14b3_p, devhx_14c3_p, devhx_14d3_p, devhx_14e3_p, devhx_14f3_p, devhx_14g3_p, devhx_14h3_p, birth_weight_lbs, devhx_12a_p, devhx_12_p, devhx_13_3_p)
+
+baby_data<- baby_data %>% replace_with_na_all(condition = ~.x == 999) #remove NA (999)
+
+# Create sum scores
+baby_data <- baby_data %>% 
+  mutate(pregnancy_cx=rowSums(across(c(devhx_10a3_p, devhx_10b3_p, devhx_10c3_p, devhx_10d3_p, devhx_10e3_p, devhx_10f3_p, devhx_10g3_p, devhx_10h3_p, devhx_10i3_p, devhx_10j3_p, devhx_10k3_p, devhx_10l3_p, devhx_10m3_p)),na.rm=T),
+         obstetric_cx=rowSums(across(c(devhx_14a3_p, devhx_14b3_p, devhx_14c3_p, devhx_14d3_p, devhx_14e3_p, devhx_14f3_p, devhx_14g3_p, devhx_14h3_p)), na.rm=T),
+         pregnancy_binary = if_else(pregnancy_cx>0,1,0),
+         obstetric_binary = if_else(obstetric_cx>0,1,0),
+         premature_binary = devhx_12a_p,
+         premature_weeks = devhx_12_p,
+         csection_binary = devhx_13_3_p,
+         smallbirth=if_else (birth_weight_lbs < 5.51156, 1, 0)) # 5.51156 lbs = 2.5kg
+
+
+#only select required variables, remove the rest
+baby_data <-baby_data %>% select(src_subject_id, pregnancy_cx, obstetric_cx, pregnancy_binary, obstetric_binary, premature_binary, premature_weeks, csection_binary, smallbirth)
+             
+```
+
+### PLOT Pregnancy Complications - Sum Score
+
+Not used in analysis.
+
+```{r, error=FALSE}
+ggplot(baby_data, aes(x = pregnancy_cx))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Sum of pregnancy complications")
+
+# mean and range
+mean(na.omit(baby_data$pregnancy_cx))
+sd(na.omit(baby_data$pregnancy_cx))
+table(baby_data$pregnancy_cx)
+```
+
+### PLOT Pregnancy Complications - Binary
+
+Categorical variables were used in the analysis to reduce recall bias from events reported 10 years later.
+
+```{r, error=FALSE}
+ggplot(baby_data, aes(x = pregnancy_binary))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Pregnancy complications - Binary")
+
+# mean and range
+mean(na.omit(baby_data$pregnancy_binary))
+sd(na.omit(baby_data$pregnancy_binary))
+table(baby_data$pregnancy_binary)
+```
+
+### PLOT Obstetric Complications - Sum Score
+
+Not used in analysis.
+
+```{r, error=FALSE}
+ggplot(baby_data, aes(x = obstetric_cx))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Sum of obstetric complications")
+
+# mean and range
+mean(na.omit(baby_data$obstetric_cx))
+sd(na.omit(baby_data$obstetric_cx))
+table(baby_data$obstetric_cx)
+```
+
+### PLOT Obstetric Complications - Binary
+
+Categorical variables were used in the analysis to reduce recall bias from events reported 10 years later.
+
+```{r, error=FALSE}
+ggplot(baby_data, aes(x = obstetric_binary))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Obstetric complications - Binary")
+
+# mean and range
+mean(na.omit(baby_data$obstetric_binary))
+sd(na.omit(baby_data$obstetric_binary))
+table(baby_data$obstetric_binary)
+```
+
+### PLOT Premature birth - in Weeks
+
+Not used in analysis.
+
+```{r}
+ggplot(baby_data, aes(x = premature_weeks))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Amount of Weeks born prematurely")
+
+# mean and range
+mean(na.omit(baby_data$premature_weeks))
+median(na.omit(baby_data$premature_weeks))
+sd(na.omit(baby_data$premature_weeks))
+table(baby_data$premature_weeks)
+```
+
+### PLOT Premature birth - Binary
+
+Categorical variables were used in the analysis to reduce recall bias from events reported 10 years later.
+
+```{r}
+ggplot(baby_data, aes(x = premature_binary))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Premature birth - binary")
+
+# mean and range
+mean(na.omit(baby_data$premature_binary))
+median(na.omit(baby_data$premature_binary))
+sd(na.omit(baby_data$premature_binary))
+table(baby_data$premature_binary)
+```
+
+### PLOT Small at birth - Binary
+```{r}
+ggplot(baby_data, aes(x = smallbirth))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Small at birth (under 2.5kg)")
+
+#mean and range
+mean(na.omit(baby_data$smallbirth))
+sd(na.omit(baby_data$smallbirth))
+table(baby_data$smallbirth)
+```
+
+### PLOT C-Section - Binary
+```{r}
+ggplot(baby_data, aes(x = csection_binary))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("C-Section binary")
+
+# mean and range
+mean(na.omit(baby_data$csection_binary))
+sd(na.omit(baby_data$csection_binary))
+table(baby_data$csection_binary)
+```
+
+# MENTAL HEALTH
+## Depression
+```{r, error=FALSE, message = FALSE}
+depression <- read_csv("E:/release_5.1/core/mental-health/mh_p_cbcl.csv")
+depression = subset(depression, select = c("src_subject_id", "eventname", "cbcl_scr_dsm5_depress_t", "cbcl_scr_dsm5_depress_r"))
+# Use only baseline
+depression = subset(depression, depression$eventname == "baseline_year_1_arm_1")
+```
+
+### PLOT Depress CBCL DSM5 Scale t-score
+```{r, error=FALSE}
+ggplot(depression, aes(x = cbcl_scr_dsm5_depress_t))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("CBCL depression DSM5 scale using t-score")
+
+# mean and range
+mean(na.omit(depression$cbcl_scr_dsm5_depress_t))
+sd(na.omit(depression$cbcl_scr_dsm5_depress_t))
+table(depression$cbcl_scr_dsm5_depress_t)
+```
+
+### PLOT Depress CBCL DSM5 Scale raw-score
+```{r, error=FALSE}
+ggplot(depression, aes(x = cbcl_scr_dsm5_depress_r))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("CBCL depression DSM5 scale using raw-score")
+
+# mean and range
+mean(na.omit(depression$cbcl_scr_dsm5_depress_r))
+sd(na.omit(depression$cbcl_scr_dsm5_depress_r))
+table(depression$cbcl_scr_dsm5_depress_r)
+```
+
+
+## Anxiety
+```{r}
+anxiety <- read_csv("E:/release_5.1/core/mental-health/mh_p_cbcl.csv")
+anxiety = subset(anxiety, select = c("src_subject_id", "eventname", "cbcl_scr_dsm5_anxdisord_t", "cbcl_scr_dsm5_anxdisord_r"))
+anxiety = subset(anxiety, anxiety$eventname == "baseline_year_1_arm_1") # select only baseline
+```
+
+### PLOT AnxDisord CBCL DSM5 Scale t-score
+```{r, error=FALSE}
+# plot
+ggplot(anxiety, aes(x = cbcl_scr_dsm5_anxdisord_t))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Anxiety using t-score")
+
+# mean and range
+mean(na.omit(anxiety$cbcl_scr_dsm5_anxdisord_t))
+sd(na.omit(anxiety$cbcl_scr_dsm5_anxdisord_t))
+table(anxiety$cbcl_scr_dsm5_anxdisord_t)
+```
+
+### PLOT AnxDisord CBCL DSM5 raw-score
+```{r, error=FALSE}
+# plot
+ggplot(anxiety, aes(x = cbcl_scr_dsm5_anxdisord_r))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Anxiety using raw-score")
+
+# mean and range
+mean(na.omit(anxiety$cbcl_scr_dsm5_anxdisord_r))
+sd(na.omit(anxiety$cbcl_scr_dsm5_anxdisord_r))
+table(anxiety$cbcl_scr_dsm5_anxdisord_r)
+```
+
+## ADHD
+```{r}
+adhd <- read_csv("E:/release_5.1/core/mental-health/mh_p_cbcl.csv")
+adhd = subset(adhd, select = c("src_subject_id", "eventname", "cbcl_scr_dsm5_adhd_t", "cbcl_scr_dsm5_adhd_r"))
+# Use only baseline
+adhd = subset(adhd, adhd$eventname == "baseline_year_1_arm_1")
+```
+
+### PLOT ADHD CBCL DSM5 Scale t-score
+```{r, error=FALSE}
+ggplot(adhd, aes(x = cbcl_scr_dsm5_adhd_t))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("ADHD CBCL DSM5 Scale (t-score)")
+
+# mean and range
+mean(na.omit(adhd$cbcl_scr_dsm5_adhd_t))
+sd(na.omit(adhd$cbcl_scr_dsm5_adhd_t))
+table(adhd$cbcl_scr_dsm5_adhd_t)
+```
+
+### PLOT ADHD CBCL DSM5 Scale raw-score
+```{r, error=FALSE}
+ggplot(adhd, aes(x = cbcl_scr_dsm5_adhd_r))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("ADHD CBCL DSM5 Scale (raw score)")
+
+# mean and range
+mean(na.omit(adhd$cbcl_scr_dsm5_adhd_r))
+sd(na.omit(adhd$cbcl_scr_dsm5_adhd_r))
+table(adhd$cbcl_scr_dsm5_adhd_r)
+```
+
+
+## Oppossitional Defiant Disorder
+```{r, error=FALSE, message = FALSE}
+opposition <- read_csv("E:/release_5.1/core/mental-health/mh_p_cbcl.csv")
+opposition = subset(opposition, select = c("src_subject_id", "eventname", "cbcl_scr_dsm5_opposit_t", "cbcl_scr_dsm5_opposit_r"))
+# Use only baseline
+opposition = subset(opposition, opposition$eventname == "baseline_year_1_arm_1")
+```
+
+### PLOT CBCL opposition DSM5 scale t-score
+```{r, error=FALSE}
+ggplot(opposition, aes(x = cbcl_scr_dsm5_opposit_t))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("ADHD CBCL DSM5 Scale (t-score)")
+
+# mean and range
+mean(na.omit(opposition$cbcl_scr_dsm5_opposit_t))
+sd(na.omit(opposition$cbcl_scr_dsm5_opposit_t))
+table(opposition$cbcl_scr_dsm5_opposit_t)
+```
+
+### PLOT CBCL opposition DSM5 scale raw score
+```{r, error=FALSE}
+ggplot(opposition, aes(x = cbcl_scr_dsm5_opposit_r))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("ADHD CBCL DSM5 Scale (raw score)")
+
+# mean and range
+mean(na.omit(opposition$cbcl_scr_dsm5_opposit_r))
+sd(na.omit(opposition$cbcl_scr_dsm5_opposit_r))
+table(opposition$cbcl_scr_dsm5_opposit_r)
+```
+
+## Conduct Disorder
+```{r, error=FALSE, message = FALSE}
+conduct <- read_csv("E:/release_5.1/core/mental-health/mh_p_cbcl.csv")
+conduct = subset(conduct, select = c("src_subject_id", "eventname", "cbcl_scr_dsm5_conduct_t", "cbcl_scr_dsm5_conduct_r"))
+# Use only baseline
+conduct = subset(conduct, conduct$eventname == "baseline_year_1_arm_1")
+```
+
+### PLOT CBCL conduct DSM5 scale t-score
+```{r, error=FALSE}
+ggplot(conduct, aes(x = cbcl_scr_dsm5_conduct_t))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("ADHD CBCL DSM5 Scale (t-score)")
+
+# mean and range
+mean(na.omit(conduct$cbcl_scr_dsm5_conduct_t))
+sd(na.omit(conduct$cbcl_scr_dsm5_conduct_t))
+table(conduct$cbcl_scr_dsm5_conduct_t)
+```
+
+### PLOT CBCL conduct DSM5 scale raw score
+```{r, error=FALSE}
+ggplot(conduct, aes(x = cbcl_scr_dsm5_conduct_r))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("ADHD CBCL DSM5 Scale (raw score)")
+
+# mean and range
+mean(na.omit(conduct$cbcl_scr_dsm5_conduct_r))
+sd(na.omit(conduct$cbcl_scr_dsm5_conduct_r))
+table(conduct$cbcl_scr_dsm5_conduct_r)
+```
+
+
+## Chronic stress/ stressful life events
+```{r, error=FALSE, message = FALSE}
+stress <- read_csv("E:/release_5.1/core/mental-health/mh_p_cbcl.csv")
+
+stress = subset(stress, select = c("src_subject_id", "eventname", "cbcl_scr_07_stress_t", "cbcl_scr_07_stress_r"))
+stress = subset(stress, stress$eventname == "baseline_year_1_arm_1") # select only baseline
+```
+
+### PLOT Stress t-score
+```{r, error=FALSE}
+# plot
+ggplot(stress, aes(x = cbcl_scr_07_stress_t))+
+  geom_histogram(binwidth = 3)
+
+# mean and range
+mean(na.omit(stress$cbcl_scr_07_stress_t))
+sd(na.omit(stress$cbcl_scr_07_stress_t))
+table(stress$cbcl_scr_07_stress_t)
+```
+
+### PLOT Stress raw score
+```{r, error=FALSE}
+# plot
+ggplot(stress, aes(x = cbcl_scr_07_stress_r))+
+  geom_histogram(binwidth = 3)
+
+# mean and range
+mean(na.omit(stress$cbcl_scr_07_stress_r))
+sd(na.omit(stress$cbcl_scr_07_stress_r))
+table(stress$cbcl_scr_07_stress_r)
+```
+
+# COGNITION
+
+## Verbal memory - Rey Auditory Verbal Learning Test
+```{r, error=FALSE, message = FALSE}
+ravlt<-read_csv("E:/release_5.1/core/neurocognition/nc_y_ravlt.csv")
+
+ravlt<-ravlt %>% filter(str_detect(eventname,'baseline')) %>% 
+  select(src_subject_id,ends_with("tc"))
+
+#score the RAVLT
+ravlt<-ravlt %>% mutate(ravlt_learning=rowSums(across(c(pea_ravlt_sd_trial_i_tc:pea_ravlt_sd_trial_v_tc)),na.rm=T)) %>%
+  rename(ravlt_distract=pea_ravlt_sd_listb_tc,
+         ravlt_short=pea_ravlt_sd_trial_vi_tc,
+         ravlt_long=pea_ravlt_ld_trial_vii_tc)
+#remove other variables
+ravlt<-ravlt %>% select(src_subject_id,starts_with("ravlt"))
+```
+
+### PLOT Verbal Memory "Learning"
+```{r, error=FALSE}
+ggplot(ravlt, aes(x = ravlt_learning))+
+  geom_histogram(binwidth = 1)
+
+# mean and range
+mean(na.omit(ravlt$ravlt_learning))
+sd(na.omit(ravlt$ravlt_learning))
+table(ravlt$ravlt_learning)
+```
+
+
+# FAMILY
+## Family conflict & criticism
+```{r, error=FALSE, message = FALSE}
+conflict_p <- read_csv("E:/release_5.1/core/culture-environment/ce_p_fes.csv")
+conflict_p = subset(conflict_p, select = c("src_subject_id", "eventname", "fes_p_ss_fc")) # select relevant variable
+conflict_p = subset(conflict_p, conflict_p$eventname == "baseline_year_1_arm_1") # select only baseline
+
+conflict_y <- read_csv("E:/release_5.1/core/culture-environment/ce_y_fes.csv")
+conflict_y = subset(conflict_y, select = c("src_subject_id", "eventname", "fes_y_ss_fc")) # select relevant variable
+conflict_y = subset(conflict_y, conflict_y$eventname == "baseline_year_1_arm_1") # select only baseline
+```
+
+### PLOT Parent Report Sum Score - Family Conflict
+```{r, error=FALSE}
+ggplot(conflict_p, aes(x = fes_p_ss_fc))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Parent Report Sum Score - Family Conflict")
+
+# mean and range
+mean(na.omit(conflict_p$fes_p_ss_fc))
+sd(na.omit(conflict_p$fes_p_ss_fc))
+table(conflict_p$fes_p_ss_fc)
+```
+
+### PLOT Youth Report Sum Score - Family Conflict
+```{r, error=FALSE, message = FALSE}
+ggplot(conflict_y, aes(x = fes_y_ss_fc))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Youth Report Sum Score - Family Conflict")
+
+# mean and range
+mean(na.omit(conflict_y$fes_y_ss_fc))
+sd(na.omit(conflict_y$fes_y_ss_fc))
+table(conflict_y$fes_y_ss_fc)
+```
+
+
+
+## Childhood Trauma
+```{r, error=FALSE, message = FALSE}
+trauma<-read_csv("E:/release_5.1/core/mental-health/mh_p_ksads_ptsd.csv")
+trauma<-trauma %>% filter(str_detect(eventname,'baseline')) %>% remove_empty() # select baseline
+
+# create total variable
+trauma<- trauma %>% mutate(total_PTSD=rowSums(across(c(ksads_ptsd_raw_754_p: ksads_ptsd_raw_770_p))))
+
+#create maltreatment variable 
+trauma<- trauma %>% mutate(maltreatment=rowSums(across(c(ksads_ptsd_raw_761_p:ksads_ptsd_raw_765_p,ksads_ptsd_raw_767_p:ksads_ptsd_raw_769_p))))
+```
+
+### PLOT Trauma
+```{r, error=FALSE}
+ggplot(trauma, aes(x = total_PTSD))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Trauma")
+
+# mean and range
+mean(na.omit(trauma$total_PTSD))
+sd(na.omit(trauma$total_PTSD))
+table(trauma$total_PTSD)
+```
+
+
+## Childhood Maltreatment
+
+Here, I create a new 'maltreatment' variable by reversing emotional warmth scores to represent emotional neglect and incorporating maltreatment data from the KSADS.
+
+```{r, error=FALSE, message = FALSE}
+emotional_warmth<-read_csv("E:/release_5.1/core/culture-environment/ce_y_crpbi.csv")
+emotional_warmth<-emotional_warmth %>% filter(str_detect(eventname,'baseline')) %>% remove_empty() # select baseline
+
+# create total variable
+emotional_warmth<- emotional_warmth %>% mutate(emo_neglect=rowSums(across(c(crpbi_parent1_y: crpbi_parent5_y))))
+
+# create binary variable (0 = no neglect, 1 = neglect)
+# 1 = "not like him" = emotional neglect. 2 or 3 = "somewhat/ a lot like him" = no neglect.
+emotional_warmth$crpbi_parent1_y_binary <- ifelse(emotional_warmth$crpbi_parent1_y == 1, 1, 0)
+emotional_warmth$crpbi_parent2_y_binary <- ifelse(emotional_warmth$crpbi_parent2_y == 1, 1, 0)
+emotional_warmth$crpbi_parent3_y_binary <- ifelse(emotional_warmth$crpbi_parent3_y == 1, 1, 0)
+emotional_warmth$crpbi_parent4_y_binary <- ifelse(emotional_warmth$crpbi_parent4_y == 1, 1, 0)
+emotional_warmth$crpbi_parent5_y_binary <- ifelse(emotional_warmth$crpbi_parent5_y == 1, 1, 0)
+
+emotional_warmth<- emotional_warmth %>% mutate(emotional_warmth_binary =rowSums(across(c(crpbi_parent1_y_binary: crpbi_parent5_y_binary))))
+
+
+# select the two necessary datasets
+maltreatment_neglect_data = subset(trauma, select = c("src_subject_id", "maltreatment")) # select
+maltreatment_neglect_data2 = subset(emotional_warmth, select = c("src_subject_id", "emotional_warmth_binary")) # select
+
+# join the two datasets by subject ID
+maltreatment_neglect = full_join(maltreatment_neglect_data, maltreatment_neglect_data2, by = "src_subject_id")
+
+# clean leftover datasets
+rm(maltreatment_neglect_data)
+rm(maltreatment_neglect_data2)
+
+# check correlation
+#cor(na.omit(maltreatment_neglect$maltreatment, maltreatment_neglect$emotional_warmth_binary))
+
+# add into 1 variable
+maltreatment_neglect<- maltreatment_neglect %>% mutate(mal_neglect=rowSums(across(c(maltreatment, emotional_warmth_binary))))
+```
+
+### PLOT Maltreatment
+```{r, error=FALSE }
+ggplot(maltreatment_neglect, aes(x = mal_neglect))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Maltreatment")
+
+# mean and range
+mean(na.omit(maltreatment_neglect$mal_neglect))
+sd(na.omit(maltreatment_neglect$mal_neglect))
+table(maltreatment_neglect$mal_neglect)
+```
+
+
+
+## Family history of mania - First-Degree Relatives
+
+They were measured only at baseline! data = fam_first. variable = family_mania
+
+```{r, error=FALSE, message = FALSE}
+fam_first<-read_csv("E:/release_5.1/core/mental-health/mh_p_fhx.csv")
+unique(fam_first$eventname) # => this shows us all data is already only at baseline
+fam_first <- fam_first %>% select(src_subject_id, famhx_ss_fath_prob_ma_p,famhx_ss_moth_prob_ma_p, famhx_ss_fulsiby1_prob_ma_p, famhx_ss_fulsiby2_prob_ma_p, famhx_ss_fulsiby3_prob_ma_p, famhx_ss_fulsiby4_prob_ma_p, famhx_ss_fulsiby5_prob_ma_p, famhx_ss_fulsibo1_prob_ma_p, famhx_ss_fulsibo2_prob_ma_p, famhx_ss_fulsibo3_prob_ma_p, famhx_ss_fulsibo4_prob_ma_p, famhx_ss_fulsibo5_prob_ma_p) # select variables
+
+fam_first<-fam_first %>% mutate(sum_history=rowSums(across(c(famhx_ss_fath_prob_ma_p, famhx_ss_moth_prob_ma_p, famhx_ss_fulsiby1_prob_ma_p, famhx_ss_fulsiby2_prob_ma_p, famhx_ss_fulsiby3_prob_ma_p, famhx_ss_fulsiby4_prob_ma_p, famhx_ss_fulsiby5_prob_ma_p, famhx_ss_fulsibo1_prob_ma_p, famhx_ss_fulsibo2_prob_ma_p, famhx_ss_fulsibo3_prob_ma_p, famhx_ss_fulsibo4_prob_ma_p, famhx_ss_fulsibo5_prob_ma_p)),na.rm=T)) # sum score 
+
+fam_first<-fam_first %>% mutate(family_mania=if_else(sum_history>0,1,0))  # binary score (yes/no)
+```
+
+### PLOT First-Degree Relatives, Binary 
+
+This is the relatives variables that was used in analysis. Still, let's have a look at other options, too! 
+
+```{r, error=FALSE}
+table(fam_first$family_mania)#check N of people with family history
+
+ggplot(fam_first, aes(x = family_mania))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Family history of mania - First Degree - Binary")
+```
+
+### PLOT First-Degree Relatives, Sum Score 
+```{r, error=FALSE}
+table(fam_first$sum_history) # sum score
+mean(fam_first$sum_history)
+sd(fam_first$sum_history)
+
+ggplot(fam_first, aes(x = sum_history))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Family history of mania - First Degree - Sum Score")
+```
+
+
+
+## Family history of mania - First and Second Degree Relatives
+
+This was not used in analysis, since previous works focused on first-degree relatives.
+
+```{r, error=FALSE, message = FALSE}
+famhx<-read_csv("E:/release_5.1/core/mental-health/mh_p_fhx.csv")
+unique(famhx$eventname) # => this shows us all data is already only at baseline
+famhx <- famhx %>% select(src_subject_id,famhx_ss_fath_prob_ma_p:famhx_ss_fulsibo5_prob_ma_p) # select variables
+famhx<-famhx %>% mutate(sum_hx=rowSums(across(2:37),na.rm=T)) # sum score 
+famhx<-famhx %>% mutate(famhx_mania=if_else(sum_hx>0,1,0)) # binary score (yes/no)
+```
+
+### PLOT First and Second Degree Relatives, Binary 
+```{r, error=FALSE}
+table(famhx$famhx_mania) #check N of people with family history
+
+ggplot(famhx, aes(x = famhx_mania))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Family history of mania - First and Second Degree - Binary")
+```
+
+
+### PLOT First and Second Degree Relatives, Sum Score
+```{r}
+table(famhx$sum_hx) #check sum score
+mean(na.omit(famhx$sum_hx))
+sd(na.omit(famhx$sum_hx))
+
+ggplot(famhx, aes(x = sum_hx))+
+  geom_histogram(binwidth = 1)+
+  ggtitle("Family history of mania - First and Second Degree - Sum Score")
+```
+
+
+
+
+
+
+# Check Demographics
+```{r, error=FALSE, message = FALSE}
+load(file='E:/data/GBI_demographics.rdata') 
+GBI_demographics = subset(GBI_demographics, GBI_demographics$eventname == "baseline_year_1_arm_1")
+```
+
+### Sex
+```{r, error=FALSE}
+table(GBI_demographics$demo_sex_v2)
+mean(na.omit(GBI_demographics$demo_sex_v2))
+```
+
+### Ethnicity and Race
+```{r, error=FALSE}
+# race
+table(GBI_demographics$race)
+
+# hispanic ethnicity
+table(GBI_demographics$ethnicity)
+```
+
+
+
+# RISK FACTOR DATASET
+## Finalize Riskfactor Dataset
+```{r}
+riskfactors <-sleep %>% select(src_subject_id,eventname,sds_p_ss_total) %>% 
+  full_join(ibs) %>%                                                            
+  full_join(asthma) %>%                                                          
+  full_join(bmi_5_twelve) %>%  # bmi without outliers z > +/-5 or under life limit
+  full_join(baby_data) %>%
+  full_join(depression) %>%
+  full_join(anxiety) %>%
+  full_join(adhd) %>%
+  full_join(opposition) %>%
+  full_join(conduct) %>%
+  full_join(stress) %>%
+  full_join(ravlt) %>%
+  full_join(conflict_p) %>%
+  full_join(conflict_y) %>%
+  full_join(trauma) %>%
+  full_join(maltreatment_neglect) %>%
+  full_join(fam_first) 
+
+## keep only relevant variables
+riskfactors = subset(new_riskfactors, select = c("src_subject_id", "eventname", "sds_p_ss_total", "three_sum", "medhx_2a", "BMI", "pregnancy_binary", "obstetric_binary", "premature_binary", "smallbirth", "csection_binary", "cbcl_scr_dsm5_depress_r", "cbcl_scr_dsm5_anxdisord_r", "cbcl_scr_dsm5_adhd_r", "cbcl_scr_dsm5_opposit_r", "cbcl_scr_dsm5_conduct_r", "cbcl_scr_07_stress_r", "ravlt_learning", "fes_p_ss_fc", "fes_y_ss_fc", "total_PTSD", "mal_neglect", "family_mania"))
+
+# keep only baseline
+new_riskfactors = subset(new_riskfactors, new_riskfactors$eventname == "baseline_year_1_arm_1") 
+
+# save dataset
+#save(new_riskfactors,file='data/new_riskfactors.rdata') 
+```
+
+
+
+## Riskfactors: List of relevant variables
+sds_p_ss_total                = sleep  
+three_sum                     = IBS  
+medhx_2a                      = asthma  
+BMI                           = bmi  
+pregnancy_binary              = any pregnancy complications  
+obstetric_binary             = any obstetric complications  
+premature_binary              = born early  
+smallbirth                    = weight under 2.5kg at birth  
+csection_binary               = C-Section  
+cbcl_scr_dsm5_depress_r       = depression  
+cbcl_scr_dsm5_anxdisord_r     = anxiety  
+cbcl_scr_dsm5_adhd_r          = ADHD  
+cbcl_scr_dsm5_opposit_r       = Oppositional behavior   
+cbcl_scr_dsm5_conduct_r       = Conduct disorder behavior  
+cbcl_scr_07_stress_r          = Stress  
+ravlt_learning                = Ray Auditory Learning Test  
+fes_p_ss_fc                   = Family Conflict - parent rating  
+fes_y_ss_fc                   = Family Conflict - youth rating  
+total_PTSD                    = Trauma  
+mal_neglect                   = Maltreatment  
+family_mania                  = any First_Degree Relatives  
+
+
+
+## Create 1 final dataset
+```{r}
+rm(list = ls()) # clean all previous datasets
+load(file='E:/data/new_riskfactors.rdata')  # load all riskfactors
+load(file='E:/data/20240912_ses.rdata')     # load socioeconomic status
+load(file='E:/data/GBI_demographics.rdata') # load GBI and demographics
+
+# join datasets
+new_GBI_demographics_riskfactors = left_join(GBI_demographics, ses)
+new_GBI_demographics_riskfactors = left_join(new_GBI_demographics_riskfactors, new_riskfactors)
+
+# save dataset
+#save(new_GBI_demographics_riskfactors, file = 'data/new_GBI_demographics_riskfactors.rdata')
+```
+
+
+## Prepare for MPlus
+```{r}
+rm(list = ls()) # clean all previous datasets
+load(file = 'E:/data/new_GBI_demographics_riskfactors.rdata') 
+new_GBI_demographics_riskfactors %>% distinct(src_subject_id) %>% count() # this file has 11,868 participants
+
+new_GBI_demographics_riskfactors <-new_GBI_demographics_riskfactors  %>% filter(!c(visit==3 |visit==4)) 
+new_GBI_demographics_riskfactors %>% distinct(src_subject_id) %>% count() # still 11868 participants
+
+new_GBI_demographics_riskfactors <- new_GBI_demographics_riskfactors %>% filter(!is.na(pgbi_p_ss_score)) 
+new_GBI_demographics_riskfactors %>% distinct(src_subject_id) %>% count() # 11866 participants
+ 
+
+new_GBI_demographics_riskfactors<-new_GBI_demographics_riskfactors %>% group_by(src_subject_id) %>% 
+  mutate(count=n()) %>% 
+  filter(count==3) %>% ungroup() %>%
+  select(!c(eventname,count))
+new_GBI_demographics_riskfactors %>% distinct(src_subject_id) %>% count() #10,634 participants (same as for the first MPLUS analysis)
+
+# transform to wide format
+data_wide<- new_GBI_demographics_riskfactors%>% pivot_wider(
+  id_cols=c(src_subject_id, race,ethnicity,demo_sex_v2, income_to_needs), # these don't change over time
+  names_from = visit,
+  values_from = c(site,acs_raked_propensity_score,pgbi_p_ss_score, 
+                 sds_p_ss_total,                # sleep
+                 three_sum,                     # IBS
+                 medhx_2a,                      # asthma
+                 BMI,                           # bmi
+                 pregnancy_binary,              # any pregnancy complications
+                 obstetric_binary,              # any obstetric complications
+                 premature_binary,              # born early
+                 smallbirth,                    # weight under 2.5kg at birth
+                 csection_binary,               # C-Section
+                 cbcl_scr_dsm5_depress_r,       # depression
+                 cbcl_scr_dsm5_anxdisord_r,     # anxiety
+                 cbcl_scr_dsm5_adhd_r,          # ADHD
+                 cbcl_scr_dsm5_opposit_r,       # Oppositional behavior
+                 cbcl_scr_dsm5_conduct_r,       # Conduct disorder behavior
+                 cbcl_scr_07_stress_r,          # Stress
+                 ravlt_learning,                # Ray Auditory Learning Test
+                 fes_p_ss_fc,                   # Family Conflict - parent rating
+                 fes_y_ss_fc,                   # Family Conflict - youth rating
+                 total_PTSD,                    # Trauma
+                 mal_neglect,                   # Maltreatment and Neglect (score of 2 questionnaires)
+                 family_mania))                 # any First_Degree Relatives))                        
+
+# add race dummy variable
+library(fastDummies)
+data_wide<-data_wide %>% 
+  dummy_cols(select_columns="race",remove_selected_columns = T,remove_first_dummy = T)
+
+
+#Convert sex and ethnicity to numeric
+data_wide<-data_wide %>% mutate(ethnicity=as.numeric(ethnicity),
+                                demo_sex_v2=as.numeric(demo_sex_v2),
+                                site_0=as.numeric(site_0))
+
+#rearrange variables
+data_wide<-data_wide %>% select(src_subject_id,site_0,acs_raked_propensity_score_0,
+                                pgbi_p_ss_score_0, pgbi_p_ss_score_1, pgbi_p_ss_score_2 ,demo_sex_v2,
+                                starts_with("race"),ethnicity, income_to_needs,
+                                ends_with("_0"))
+
+
+#replace missing with -99 (required for Mplus to work)
+new_data_final<-data_wide %>% replace(is.na(.),-99)
+
+##save data (id's included)
+#setwd("E:")
+#write.csv(new_data_final, file='code/MPLUS/new_data_predictors.csv',row.names = F)
+
+##save data (id's and headers removed) ==> manually go into excel and remove headers
+new_data_final <- new_data_final %>% select(-src_subject_id)
+colnames(new_data_final)
+#write.csv(new_data_final, file='code/MPLUS/new_data_predictors_noheaders.csv',row.names = F,col.names = F)
+```
+
+
+
+# SLEEP DATASET
+
+for post-hoc analysis only; not part of the main hypotheses
+```{r}
+sleep <- read_csv("E:/release_5.1/core/physical-health/ph_p_sds.csv")
+sleep = subset(sleep, select = c("src_subject_id", "eventname", "sds_p_ss_total", "sds_p_ss_dims",
+"sds_p_ss_sbd", "sds_p_ss_da", "sds_p_ss_swtd", "sds_p_ss_does", "sds_p_ss_shy"))
+
+sleep = subset(sleep, sleep$eventname == "baseline_year_1_arm_1") # select only baseline
+
+sleep_dataset = subset(sleep, select = c ("src_subject_id", "eventname", "sds_p_ss_dims", "sds_p_ss_sbd", "sds_p_ss_da", "sds_p_ss_swtd", "sds_p_ss_does", "sds_p_ss_shy"))
+ 
+# save dataset
+# save(sleep_dataset,file='data/sleep_dataset.rdata') 
+
+# Create one final dataset
+load(file='E:/data/20240912_ses.rdata')     # load socioeconomic status
+load(file='E:/data/GBI_demographics.rdata') # load GBI and demographics
+
+# join datasets
+sleep_with_GBIdemographics = left_join(GBI_demographics, ses)
+sleep_with_GBIdemographics = left_join(sleep_with_GBIdemographics, sleep_dataset)
+
+# save dataset
+# save(sleep_with_GBIdemographics, file = 'data/sleep_with_GBIdemographics.rdata')
+```
+
+## Prepare Sleep Dataset for MPlus
+```{r}
+rm(list = ls()) # clean all previous datasets
+load(file = 'E:/data/sleep_with_GBIdemographics.rdata') 
+sleep_with_GBIdemographics %>% distinct(src_subject_id) %>% count() # this file has 11,868 participants
+
+sleep_with_GBIdemographics <-sleep_with_GBIdemographics  %>% filter(!c(visit==3 |visit==4)) 
+sleep_with_GBIdemographics %>% distinct(src_subject_id) %>% count() # still 11868 participants
+
+sleep_with_GBIdemographics <- sleep_with_GBIdemographics %>% filter(!is.na(pgbi_p_ss_score)) 
+sleep_with_GBIdemographics %>% distinct(src_subject_id) %>% count() # 11866 participants
+ 
+
+sleep_with_GBIdemographics<-sleep_with_GBIdemographics %>% group_by(src_subject_id) %>% 
+  mutate(count=n()) %>% 
+  filter(count==3) %>% ungroup() %>%
+  select(!c(eventname,count))
+sleep_with_GBIdemographics %>% distinct(src_subject_id) %>% count() #10,634 participants (same as for the first MPLUS analysis)
+
+# transform to wide format
+data_wide<- sleep_with_GBIdemographics%>% pivot_wider(
+  id_cols=c(src_subject_id, race,ethnicity,demo_sex_v2, income_to_needs), # these don't change over time
+  names_from = visit,
+  values_from = c(site,acs_raked_propensity_score,pgbi_p_ss_score, 
+                 sds_p_ss_dims, # Sleep Subscale - Disorders of Initiating and Maintaining Sleep
+                 sds_p_ss_sbd,  # Sleep Subscale - Sleep Breathing disorders
+                 sds_p_ss_da,   # Sleep Subscale - Disorder of Arousal 
+                 sds_p_ss_swtd, # Sleep Subscale - Sleep-Wake transition Disorders
+                 sds_p_ss_does, # Sleep Subscale - Disorders of Excessive Somnolence
+                 sds_p_ss_shy)) # Sleep Subscale - Sleep Hyperhydrosis                                    
+
+# add race dummy variable
+library(fastDummies)
+data_wide<-data_wide %>% 
+  dummy_cols(select_columns="race",remove_selected_columns = T,remove_first_dummy = T)
+
+
+#Convert sex and ethnicity to numeric
+data_wide<-data_wide %>% mutate(ethnicity=as.numeric(ethnicity),
+                                demo_sex_v2=as.numeric(demo_sex_v2),
+                                site_0=as.numeric(site_0))
+
+#rearrange variables
+data_wide<-data_wide %>% select(src_subject_id,site_0,acs_raked_propensity_score_0,
+                                pgbi_p_ss_score_0, pgbi_p_ss_score_1, pgbi_p_ss_score_2 ,demo_sex_v2,
+                                starts_with("race"),ethnicity, income_to_needs,
+                                ends_with("_0"))
+
+
+#replace missing with -99 (required for Mplus to work)
+new_data_final<-data_wide %>% replace(is.na(.),-99)
+```
+
+## Save Sleep Dataset
+
+Save the dataset with IDs for clarity and without IDs and headers for Mplus analysis. 
+
+```{r}
+sleep_dataset = new_data_final 
+
+##save data (id's included)
+#write.csv(sleep_dataset, file='code/MPLUS/sleep_dataset.csv',row.names = F)
+
+##save data (id's and headers removed)
+sleep_dataset <- sleep_dataset %>% select(-src_subject_id)
+colnames(sleep_dataset)
+#write.csv(sleep_dataset, file='code/MPLUS/sleep_dataset_noheaders.csv',row.names = F,col.names = F)
+```
+
+
+
+
+

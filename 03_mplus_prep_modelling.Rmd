@@ -1,0 +1,98 @@
+---
+title: "Mania_Modelling"
+author: "by_Jasmin_Doenicke"
+date: "Step 3"
+output:
+  html_document:
+    toc: yes
+    theme: united
+  word_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+This document prepares our data for the first calculation in Mplus.
+Currently, there is: 1. the mania dataset 2. the demographics dataset. 
+All necessary variables are obtained. Now, shaping it up for it to run in Mplus is necessary.
+
+# STARTER CODE
+```{r, warning=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+
+# libraries
+library(tidyverse)
+
+# set working directory
+setwd("F:")
+```
+
+```{r, warning=FALSE}
+#load data
+load(file='E:/data/GBI_demographics.rdata')
+
+# rename dataset to "data" for cleaner code
+data = GBI_demographics
+```
+
+# Data Cleaning
+```{r, warning=FALSE}
+# only keep the first 4 time-points (baseline, 1,2 yr follow-up)
+data<-data %>% filter(!c(visit==3 |visit==4))
+
+#filter out those with missing mania data
+data <- data %>% filter(!is.na(pgbi_p_ss_score)) 
+
+#only keep participants with 3x time points (not missing for any time-points)
+data4<-data %>% group_by(src_subject_id) %>% 
+  mutate(count=n()) %>% 
+  filter(count==3) %>% ungroup() %>%
+  select(!c(eventname,count))
+
+#count total n participants
+data4 %>% distinct(src_subject_id) %>% count() #10634
+```
+
+# Select Variables 
+```{r, warning=FALSE}
+#select variables we want to model 
+data4<-data4 %>% select(src_subject_id,visit,site,
+                        acs_raked_propensity_score,
+                        pgbi_p_ss_score)
+
+#convert to wide format
+data_wide<-data4 %>% pivot_wider(
+  id_cols=c(src_subject_id),
+  names_from = visit,
+  values_from = c(site,acs_raked_propensity_score,pgbi_p_ss_score))
+
+#rearrange variables
+data_wide<-data_wide %>% select(src_subject_id,site_0,acs_raked_propensity_score_0,
+                                starts_with("pgbi"))
+                          
+
+#check missingness on acs variable
+data_wide %>% filter(is.na(acs_raked_propensity_score_0)) #0 cases
+
+#remove these participants if becessary (not the case here)
+#data_wide <- data_wide %>% filter(!is.na(acs_raked_propensity_score_0))
+
+#check final N
+data4 %>% distinct(src_subject_id) %>% count() #10634
+
+#replace missing with -99 (required for Mplus to work)
+data_final<-data_wide %>% replace(is.na(.),-99)
+```
+
+# Save Data for Mplus
+```{r, warning=FALSE}
+##save data (id's included)
+#write.csv(data_final, file='../code/MPLUS/data_headers.csv',row.names = F)
+
+##save data (id's and headers removed)
+#data_final <- data_final %>% select(-src_subject_id)
+#write.csv(data_final, file='../code/MPLUS/data_noheaders.csv',row.names = F,col.names=F)
+```
+
+The data with IDs is used to keep track of what is in the data. 
+The data with headers removed is used in Mplus in the next step.

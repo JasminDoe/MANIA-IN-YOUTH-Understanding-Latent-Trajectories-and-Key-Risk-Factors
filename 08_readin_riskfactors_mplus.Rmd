@@ -1,0 +1,1100 @@
+---
+title: "Mania_Modelling"
+author: "by_Jasmin_Doenicke"
+date: "Step 8"
+output:
+  html_document:
+    toc: yes
+    theme: united
+  word_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+This code processes, analyzes, and visualizes risk factors for mania symptom classes using data from Mplus output files.
+
+# STARTER Code
+```{r setup, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "E:")
+getwd()
+
+# turn off all warning messages to make output cleaner
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+```{r, echo = FALSE, message = FALSE}
+library(tidyverse)
+library(janitor)
+library(effectsize)
+
+
+#set workind directory
+setwd("E:")
+
+#set theme
+theme_set(theme_bw())
+```
+
+
+# Risk Factors
+## Without covariates - Demographics
+### Sex
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/01_sex.out', header=F,skip=880,sep=" ")   # skip rows before reading in data (check in Excel)
+
+sex <- data[c(4, 6, 8), c(5,19,26,33,40,47, 54, 61)]
+sex <- sex %>% remove_empty()
+colnames(sex)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+sex <-sex %>% mutate(class=c("1","2",'3'))
+
+sex
+```
+
+### Race
+```{r}
+## BLACK
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/02a_race_b.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+race_b <- data[c(4,6,8), c(5,16, 23,30,37,44,51,58)]
+race_b <- race_b %>% remove_empty()
+colnames(race_b)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+race_b <- race_b %>% mutate(class=c("1","2",'3'))
+
+## American Indian/ Alaskan
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/02b_race_ai.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+race_ai <- data[c(4,6,8), c(5,15, 22, 29, 36, 43, 50, 57)]
+race_ai <- race_ai %>% remove_empty()
+colnames(race_ai)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+race_ai <- race_ai %>% mutate(class=c("1","2",'3'))
+
+## Pacific
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/02c_race_p.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+race_p <- data[c(4,6,8), c(5,16, 23,30,37,44,51,58)]
+race_p <- race_p %>% remove_empty()
+colnames(race_p)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+race_p <- race_p %>% mutate(class=c("1","2",'3'))
+
+## Asian
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/02d_race_as.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+race_as <- data[c(4,6,8), c(5,15, 22,29, 36, 43, 50, 57)]
+race_as <- race_as %>% remove_empty()
+colnames(race_as)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+race_as <- race_as %>% mutate(class=c("1","2",'3'))
+
+## Other/ Multiple
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/02e_race_o.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+race_o <- data[c(4,6,8), c(5,16, 23,30,37,44,51,58)]
+race_o <- race_o %>% remove_empty()
+colnames(race_o)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+race_o <- race_o %>% mutate(class=c("1","2",'3'))
+
+race_ai
+
+race_o
+
+race_as
+
+race_p
+
+race_b
+```
+
+### Ethnicity
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/03_ethn.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+ethn <- data[c(4,6,8), c(5,18, 25,32,39,46,53,60)]
+ethn <- ethn %>% remove_empty()
+colnames(ethn)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+ethn <- ethn %>% mutate(class=c("1","2",'3'))
+```
+
+### Income-to-Needs
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/04_inr.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+inr <- data[c(4,6,8), c(5,19,26,33,40,47,54,61)]
+inr <- inr %>% remove_empty()
+colnames(inr)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+inr <- inr %>% mutate(class=c("1","2",'3'))
+
+inr
+```
+
+## Without covariates - Risk Factors
+### Sleep
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/05_sleep.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+sleep <- data[c(4,6,8), c(5,17,24,31,38,45,52,59)]
+sleep <- sleep %>% remove_empty()
+colnames(sleep)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+sleep <- sleep %>% mutate(class=c("1","2",'3'))
+
+sleep
+```
+
+### IBS
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/06_ibs.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+ibs <- data[c(4,6,8), c(5,19,26,33,40,47,54,61)]
+ibs <- ibs %>% remove_empty()
+colnames(ibs)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+ibs <- ibs %>% mutate(class=c("1","2",'3'))
+
+ibs
+```
+
+#### Asthma
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/07_asthma.out', header=F,skip=881,sep=" ")   # skip rows before reading in data (check in Excel)
+
+asthma <- data[c(4,6,8), c(5,16, 23,30,37,44,51,58)]
+asthma <- asthma %>% remove_empty()
+colnames(asthma)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+asthma <- asthma %>% mutate(class=c("1","2",'3'))
+
+asthma
+```
+
+### BMI
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/08_bmi.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+bmi <- data[c(4,6,8), c(5,19,26,33,40,47,54,61)]
+bmi <- bmi %>% remove_empty()
+colnames(bmi)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+bmi <- bmi %>% mutate(class=c("1","2",'3'))
+
+bmi
+```
+
+### All Pregnancy 
+#### Pregnancy Complications
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/09_preg.out', header=F,skip=881,sep=" ")   # skip rows before reading in data (check in Excel)
+
+preg <- data[c(4,6,8), c(5,18, 25,32,39,46,53,60)]
+preg <- preg %>% remove_empty()
+colnames(preg)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+preg <- preg %>% mutate(class=c("1","2",'3'))
+
+preg
+```
+
+#### Obstetric Complications
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/10_obst.out', header=F,skip=881,sep=" ")   # skip rows before reading in data (check in Excel)
+
+obst <- data[c(4,6,8), c(5,18, 25,32,39,46,53,60)]
+obst <- obst %>% remove_empty()
+colnames(obst)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+obst <- obst %>% mutate(class=c("1","2",'3'))
+
+obst
+```
+
+#### Premature birth
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/11_premat.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+premat <- data[c(4,6,8), c(5,16, 23,30,37,44,51,58)]
+premat <- premat %>% remove_empty()
+colnames(premat)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+premat <- premat %>% mutate(class=c("1","2",'3'))
+```
+
+#### Small at Birth (under 2,5kg)
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/12_small.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+small <- data[c(4,6,8), c(5,17,24,31,38,45,52,59)]
+small <- small %>% remove_empty()
+colnames(small)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+small <- small %>% mutate(class=c("1","2",'3'))
+
+small
+```
+
+#### C-Section
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/13_csect.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+csect <- data[c(4,6,8), c(5,17,24,31,38,45,52,59)]
+csect <- csect %>% remove_empty()
+colnames(csect)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+csect <- csect %>% mutate(class=c("1","2",'3'))
+
+csect
+```
+
+### Depression 
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/14_depress.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+depress <- data[c(4,6,8), c(5,15, 22,29,36,43,50,57)]
+depress <- depress %>% remove_empty()
+colnames(depress)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+depress <- depress %>% mutate(class=c("1","2",'3'))
+
+depress
+```
+
+### Anxiety 
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/15_anx.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+anx <- data[c(4,6,8), c(5,19,26,33,40,47,54,61)]
+anx <- anx %>% remove_empty()
+colnames(anx)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+anx <- anx %>% mutate(class=c("1","2",'3'))
+
+anx
+```
+
+### ADHD
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/16_adhd.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+adhd <- data[c(4,6,8), c(5,18, 25,32,39,46,53,60)]
+adhd <- adhd %>% remove_empty()
+colnames(adhd)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+adhd <- adhd %>% mutate(class=c("1","2",'3'))
+
+adhd
+```
+
+### Oppositional Defiant Disorder
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/17_opposit.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+opposit <- data[c(4,6,8), c(5,15, 22,29,36,43,50,57)]
+opposit <- opposit %>% remove_empty()
+colnames(opposit)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+opposit <- opposit %>% mutate(class=c("1","2",'3'))
+
+opposit
+```
+
+### Conduct Disorder 
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/18_conduct.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+conduct <- data[c(4,6,8), c(5,15, 22,29,36,43,50,57)]
+conduct <- conduct %>% remove_empty()
+colnames(conduct)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+conduct <- conduct %>% mutate(class=c("1","2",'3'))
+
+conduct
+```
+
+### Stress
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/19_stress.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+stress <- data[c(4,6,8), c(5,16, 23,30,37,44,51,58)]
+stress <- stress %>% remove_empty()
+colnames(stress)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+stress <- stress %>% mutate(class=c("1","2",'3'))
+
+stress
+```
+
+### Verbal Memory
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/20_ravlt.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+ravlt <- data[c(4,6,8), c(5,17,24,31,38,45,52,59)]
+ravlt <- ravlt %>% remove_empty()
+colnames(ravlt)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+ravlt <- ravlt %>% mutate(class=c("1","2",'3'))
+
+ravlt
+```
+
+
+### Family Conflict - Parent
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/21_fes_p.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+fes_p <- data[c(4,6,8), c(5,17,24,31,38,45,52,59)]
+fes_p <- fes_p %>% remove_empty()
+colnames(fes_p)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+fes_p <- fes_p %>% mutate(class=c("1","2",'3'))
+
+fes_p
+```
+
+### Family Conflict - Youth
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/22_fes_y.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+fes_y <- data[c(4,6,8), c(5,17,24,31,38,45,52,59)]
+fes_y <- fes_y %>% remove_empty()
+colnames(fes_y)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+fes_y <- fes_y %>% mutate(class=c("1","2",'3'))
+
+fes_y
+```
+
+### Trauma
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/23_trauma.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+trauma <- data[c(4,6,8), c(5,16, 23,30,37,44,51,58)]
+trauma <- trauma %>% remove_empty()
+colnames(trauma)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+trauma <- trauma %>% mutate(class=c("1","2",'3'))
+
+trauma
+```
+
+### Maltreatment
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/24_maltr.out', header=F,skip=886,sep=" ")   # skip rows before reading in data (check in Excel)
+
+maltr <- data[c(4,6,8), c(5,17,24,31,38,45,52,59)]
+maltr <- maltr %>% remove_empty()
+colnames(maltr)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+maltr <- maltr %>% mutate(class=c("1","2",'3'))
+
+maltr
+```
+
+### First-Degree Relatives 
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/without_covariates/25_first_d.out', header=F,skip=881,sep=" ")   # skip rows before reading in data (check in Excel)
+
+first_d <- data[c(4,6,8), c(5,15, 22,29,36,43,50,57)]
+first_d <- first_d %>% remove_empty()
+colnames(first_d)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+first_d <- first_d %>% mutate(class=c("1","2",'3'))
+
+first_d
+```
+
+
+
+### Merge Riskfactors without Covariates
+```{r}
+riskfactors_without_covariates = rbind(sex, race_b, race_ai, race_p, race_as, race_o, ethn, inr, sleep, ibs, asthma, bmi,
+preg, obst, premat, small, csect, depress, anx, adhd, opposit, conduct, stress, ravlt, fes_p, fes_y, trauma, maltr, first_d)
+
+#convert OR to effect size
+riskfactors_without_covariates <- riskfactors_without_covariates %>% mutate(est_d=oddsratio_to_d(OR),
+                      lower_95_d=oddsratio_to_d(lower_95),
+                      upper_95_d=oddsratio_to_d(upper_95))
+
+# add explanation to group: 
+riskfactors_without_covariates$meaning <- ifelse(riskfactors_without_covariates$class == 1, "High Symptoms VS. No Symptoms", 
+               ifelse(riskfactors_without_covariates$class == 2, "Moderate Symptoms VS. No Symptoms", 
+               ifelse(riskfactors_without_covariates$class == 3, "Low Symptoms VS. No Symptoms", NA)))
+ 
+riskfactors_without_covariates_FINAL = riskfactors_without_covariates
+
+#save
+#save(riskfactors_without_covariates_FINAL,file="E:/data/riskfactors_without_covariates_FINAL.rdata")
+
+riskfactors_without_covariates_FINAL
+```
+
+
+### Merge Demographics 
+```{r}
+demographics_without_covariates = rbind(sex, race_b, race_ai, race_p, race_as, race_o, ethn, inr)
+
+#convert OR to effect size
+demographics_without_covariates <- demographics_without_covariates %>% mutate(est_d=oddsratio_to_d(OR),
+                      lower_95_d=oddsratio_to_d(lower_95),
+                      upper_95_d=oddsratio_to_d(upper_95))
+
+# add explanation to group: 
+demographics_without_covariates$meaning <- ifelse(demographics_without_covariates$class == 1, "High Symptoms VS. No Symptoms", 
+               ifelse(demographics_without_covariates$class == 2, "Moderate Symptoms VS. No Symptoms", 
+               ifelse(demographics_without_covariates$class == 3, "Low Symptoms VS. No Symptoms", NA)))
+ 
+demographics_without_covariates_FINAL = demographics_without_covariates
+
+#save
+#save(demographics_without_covariates_FINAL,file="E:/data/demographics_without_covariates_FINAL.rdata")
+
+demographics_without_covariates_FINAL
+```
+
+
+
+
+  
+## With covariates
+### Sleep
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/01_sleep.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+sleep <- data[c(4,15,26), c(5,17,24,31,38,45,52,59)]
+sleep <- sleep %>% remove_empty()
+colnames(sleep)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+sleep <- sleep %>% mutate(class=c("1","2",'3'))
+
+sleep
+```
+
+### IBS
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/02_ibs.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+ibs <- data[c(4,15,26), c(5,19,26,33,40,47,54,61)]
+ibs <- ibs %>% remove_empty()
+colnames(ibs)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+ibs <- ibs %>% mutate(class=c("1","2",'3'))
+
+ibs
+```
+
+#### Asthma
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/03_asthma.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+asthma <- data[c(4,15,26), c(5,16, 23,30,37,44,51,58)]
+asthma <- asthma %>% remove_empty()
+colnames(asthma)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+asthma <- asthma %>% mutate(class=c("1","2",'3'))
+
+asthma
+```
+
+### BMI
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/04_bmi.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+bmi <- data[c(4,15,26), c(5,19,26,33,40,47,54,61)]
+bmi <- bmi %>% remove_empty()
+colnames(bmi)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+bmi <- bmi %>% mutate(class=c("1","2",'3'))
+
+bmi
+```
+
+### All Pregnancy
+#### Pregnancy Complications
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/05_preg.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+preg <- data[c(4,15,26), c(5,18, 25,32,39,46,53,60)]
+preg <- preg %>% remove_empty()
+colnames(preg)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+preg <- preg %>% mutate(class=c("1","2",'3'))
+
+preg
+```
+
+#### Obstetric Complications
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/06_obst.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+obst <- data[c(4,15,26), c(5,18, 25,32,39,46,53,60)]
+obst <- obst %>% remove_empty()
+colnames(obst)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+obst <- obst %>% mutate(class=c("1","2",'3'))
+
+obst
+```
+
+#### Premature birth
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/07_premat.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+premat <- data[c(4,15,26), c(5,16, 23,30,37,44,51,58)]
+premat <- premat %>% remove_empty()
+colnames(premat)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+premat <- premat %>% mutate(class=c("1","2",'3'))
+
+premat
+```
+
+#### Small at Birth (under 2,5kg)
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/08_small.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+small <- data[c(4,15,26), c(5,17,24,31,38,45,52,59)]
+small <- small %>% remove_empty()
+colnames(small)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+small <- small %>% mutate(class=c("1","2",'3'))
+
+small
+```
+
+#### C-Section
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/09_csect.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+csect <- data[c(4,15,26), c(5,17,24,31,38,45,52,59)]
+csect <- csect %>% remove_empty()
+colnames(csect)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+csect <- csect %>% mutate(class=c("1","2",'3'))
+
+csect
+```
+
+### Depression 
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/10_depress.out', header=F,skip=1216,sep=" ")   # skip rows before reading in data (check in Excel)
+
+depress <- data[c(4,15,26), c(5,15, 22,29,36,43,50,57)]
+depress <- depress %>% remove_empty()
+colnames(depress)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+depress <- depress %>% mutate(class=c("1","2",'3'))
+
+depress
+```
+
+### Anxiety 
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/11_anx.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+anx <- data[c(4,15,26), c(5,19,26,33,40,47,54,61)]
+anx <- anx %>% remove_empty()
+colnames(anx)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+anx <- anx %>% mutate(class=c("1","2",'3'))
+
+anx
+```
+
+### ADHD
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/12_adhd.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+adhd <- data[c(4,15,26), c(5,18, 25,32,39,46,53,60)]
+adhd <- adhd %>% remove_empty()
+colnames(adhd)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+adhd <- adhd %>% mutate(class=c("1","2",'3'))
+
+adhd
+```
+
+### Oppositional Defiant Disorder
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/13_opposit.out', header=F,skip=1215, sep=" ")   # skip rows before reading in data (check in Excel)
+
+opposit <- data[c(4,15,26), c(5,15, 22,29,36,43,50,57)]
+opposit <- opposit %>% remove_empty()
+colnames(opposit)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+opposit <- opposit %>% mutate(class=c("1","2",'3'))
+
+opposit
+```
+
+### Conduct Disorder 
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/14_conduct.out', header=F,skip=1214,sep=" ")   # skip rows before reading in data (check in Excel)
+
+conduct <- data[c(4,15,26), c(5,15, 22,29,36,43,50,57)]
+conduct <- conduct %>% remove_empty()
+colnames(conduct)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+conduct <- conduct %>% mutate(class=c("1","2",'3'))
+
+conduct
+```
+
+### Stress
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/15_stress.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+stress <- data[c(4,15,26), c(5,16, 23,30,37,44,51,58)]
+stress <- stress %>% remove_empty()
+colnames(stress)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+stress <- stress %>% mutate(class=c("1","2",'3'))
+
+stress
+```
+
+
+### Verbal Memory
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/16_ravlt.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+ravlt <- data[c(4,15,26), c(5,17,24,31,38,45,52,59)]
+ravlt <- ravlt %>% remove_empty()
+colnames(ravlt)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+ravlt <- ravlt %>% mutate(class=c("1","2",'3'))
+
+ravlt
+```
+
+
+### Family Conflict - Parent
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/17_fes_p.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+fes_p <- data[c(4,15,26), c(5,17,24,31,38,45,52,59)]
+fes_p <- fes_p %>% remove_empty()
+colnames(fes_p)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+fes_p <- fes_p %>% mutate(class=c("1","2",'3'))
+
+fes_p
+```
+
+### Family Conflict - Youth
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/18_fes_y.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+fes_y <- data[c(4,15,26), c(5,17,24,31,38,45,52,59)]
+fes_y <- fes_y %>% remove_empty()
+colnames(fes_y)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+fes_y <- fes_y %>% mutate(class=c("1","2",'3'))
+
+fes_y
+```
+
+### Trauma
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/19_trauma.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+trauma <- data[c(4,15,26), c(5,16, 23,30,37,44,51,58)]
+trauma <- trauma %>% remove_empty()
+colnames(trauma)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+trauma <- trauma %>% mutate(class=c("1","2",'3'))
+
+trauma
+```
+
+### Maltreatment
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/20_maltr.out', header=F,skip=1211,sep=" ")   # skip rows before reading in data (check in Excel)
+
+maltr <- data[c(4,15,26), c(5,17,24,31,38,45,52,59)]
+maltr <- maltr %>% remove_empty()
+colnames(maltr)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+maltr <- maltr %>% mutate(class=c("1","2",'3'))
+
+maltr
+```
+
+### First-Degree Relatives 
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/with_covariates/21_first_d.out', header=F,skip=1214,sep=" ")   # skip rows before reading in data (check in Excel)
+
+first_d <- data[c(4,15,26), c(5,15, 22,29,36,43,50,57)]
+first_d <- first_d %>% remove_empty()
+colnames(first_d)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+first_d <- first_d %>% mutate(class=c("1","2",'3'))
+
+first_d
+```
+
+
+### Merge Riskfactors with Covariates
+```{r}
+riskfactors_with_covariates = rbind(sleep, ibs, asthma, bmi, preg, obst, premat, small, csect, depress, anx, adhd, opposit, conduct, stress, ravlt, fes_p, fes_y, trauma, maltr, first_d)
+
+#making everything numeric
+riskfactors_with_covariates$lower_99 = as.numeric(riskfactors_with_covariates$lower_99)
+riskfactors_with_covariates$lower_95 = as.numeric(riskfactors_with_covariates$lower_95)
+riskfactors_with_covariates$lower_90 = as.numeric(riskfactors_with_covariates$lower_90)
+riskfactors_with_covariates$class = as.numeric(riskfactors_with_covariates$class)
+
+#convert OR to effect size
+riskfactors_with_covariates <- riskfactors_with_covariates %>% mutate(est_d=oddsratio_to_d(OR),
+                      lower_95_d=oddsratio_to_d(lower_95),
+                      upper_95_d=oddsratio_to_d(upper_95))
+
+# add explanation to group
+riskfactors_with_covariates$meaning <- ifelse(riskfactors_with_covariates$class == 1, "High Symptoms VS. No Symptoms", 
+               ifelse(riskfactors_with_covariates$class == 2, "Moderate Symptoms VS. No Symptoms", 
+               ifelse(riskfactors_with_covariates$class == 3, "Low Symptoms VS. No Symptoms", NA)))
+ 
+
+riskfactors_with_covariates_FINAL = riskfactors_with_covariates
+
+#save
+#save(riskfactors_with_covariates_FINAL,file="E:/data/riskfactors_with_covariates_FINAL.rdata")
+
+riskfactors_with_covariates_FINAL
+```
+
+
+
+
+## 6 sleep subscales
+
+used for post-hoc analysis only
+
+### dims
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/sleep/01_dims.out', header=F,skip=1206,sep=" ")   # skip rows before reading in data (check in Excel)
+
+dims <- data[c(4,15,26), c(5,18, 25,32,39,46,53,60)]
+dims <- dims %>% remove_empty()
+colnames(dims)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+dims <- dims %>% mutate(class=c("1","2",'3'))
+```
+
+
+### sbd
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/sleep/02_sbd.out', header=F,skip=1206,sep=" ")   # skip rows before reading in data (check in Excel)
+
+sbd <- data[c(4,15,26), c(5,19,26,33,40,47,54,61)]
+sbd <- sbd %>% remove_empty()
+colnames(sbd)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+sbd <- sbd %>% mutate(class=c("1","2",'3'))
+```
+
+### da
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/sleep/03_da.out', header=F,skip=1206,sep=" ")   # skip rows before reading in data (check in Excel)
+
+da <- data[c(4,15,26), c(5,20,27,34,41,48,55,62)]
+da <- da %>% remove_empty()
+colnames(da)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+da <- da %>% mutate(class=c("1","2",'3'))
+```
+
+### swtd
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/sleep/04_swtd.out', header=F,skip=1206,sep=" ")   # skip rows before reading in data (check in Excel)
+
+swtd <- data[c(4,15,26), c(5,18, 25,32,39,46,53,60)]
+swtd <- swtd %>% remove_empty()
+colnames(swtd)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+swtd <- swtd %>% mutate(class=c("1","2",'3'))
+```
+
+### does
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/sleep/05_does.out', header=F,skip=1206,sep=" ")   # skip rows before reading in data (check in Excel)
+
+does <- data[c(4,15,26), c(5,18, 25,32,39,46,53,60)]
+does <- does %>% remove_empty()
+colnames(does)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+does <- does %>% mutate(class=c("1","2",'3'))
+```
+
+### shy
+```{r}
+data<-read.delim('E:/code/MPLUS/risk_predictors/sleep/06_shy.out', header=F,skip=1206,sep=" ")   # skip rows before reading in data (check in Excel)
+
+shy <- data[c(4,15,26), c(5,19,26,33,40,47,54,61)]
+shy <- shy %>% remove_empty()
+colnames(shy)<-c("var",'lower_99','lower_95','lower_90','OR','upper_90','upper_95','upper_99')
+shy <- shy %>% mutate(class=c("1","2",'3'))
+```
+
+### Merge Sleep Subscale
+```{r}
+riskfactors_sleep = rbind(dims, sbd, da, swtd, does, shy)
+
+#making everything numeric
+riskfactors_sleep$lower_99 = as.numeric(riskfactors_sleep$lower_99)
+riskfactors_sleep$lower_95 = as.numeric(riskfactors_sleep$lower_95)
+riskfactors_sleep$lower_90 = as.numeric(riskfactors_sleep$lower_90)
+riskfactors_sleep$class = as.factor(riskfactors_sleep$class)
+
+#convert OR to effect size
+riskfactors_sleep <- riskfactors_sleep %>% mutate(est_d=oddsratio_to_d(OR),
+                      lower_95_d=oddsratio_to_d(lower_95),
+                      upper_95_d=oddsratio_to_d(upper_95))
+
+# add explanation to group
+riskfactors_sleep$meaning <- ifelse(riskfactors_sleep$class == 1, "High Symptoms VS. No Symptoms", 
+               ifelse(riskfactors_sleep$class == 2, "Moderate Symptoms VS. No Symptoms", 
+               ifelse(riskfactors_sleep$class == 3, "Low Symptoms VS. No Symptoms", NA)))
+ 
+
+riskfactors_sleep_FINAL = riskfactors_sleep
+
+#save
+#save(riskfactors_sleep_FINAL,file="E:/data/riskfactors_sleep_FINAL.rdata")
+
+riskfactors_sleep_FINAL
+```
+
+
+
+
+# Plot
+
+Nicer plots are in the "10_final_plots" file! These are some I tried out previously.  
+
+## Risk Factors without covariates
+```{r}
+rm(list = ls())
+load("E:/data/riskfactors_without_covariates_FINAL.rdata")
+
+riskfactors_wo_c <- subset(riskfactors_without_covariates_FINAL, 
+                           var %in% c("SLEEP", "IBS", "ASTHMA", "BMI", "PREG", "OBST", "PREMAT", "SMALL", "CSECT", "DEPRESS", 
+                                      "ANX", "ADHD", "OPPOSIT", "CONDUCT", "STRESS", "RAVLT", "FES_P", "FES_Y", "TRAUMA", 
+                                      "MALTR", "FIRST_D") & 
+                           !(var %in% c("SEX", "RACE_B", "RACE_AI", "RACE_P", "RACE_AS", "RACE_O", "ETHN", "INR")))
+covariates <- subset(riskfactors_without_covariates_FINAL, 
+                           var %in% c("SEX", "RACE_B", "RACE_AI", "RACE_P", "RACE_AS", "RACE_O", "ETHN", "INR") & 
+                           !(var %in% c("SLEEP", "IBS", "ASTHMA", "BMI", "PREG", "OBST", "PREMAT", "SMALL", "CSECT", "DEPRESS", 
+                                      "ANX", "ADHD", "OPPOSIT", "CONDUCT", "STRESS", "RAVLT", "FES_P", "FES_Y", "TRAUMA", 
+                                      "MALTR", "FIRST_D")))
+```
+
+
+
+```{r}
+# Plot Odds Ratio
+riskfactors_wo_c %>%    
+ggplot(aes(x=OR,y=reorder(var,OR)))+
+  geom_vline(xintercept=1,linetype='dashed',linewidth=0.1)+
+    geom_errorbar(aes(xmin=lower_95,xmax=upper_95,color=class),width=0, linewidth=2.5,alpha=0.8,position=position_dodge(width=0.55))+
+      geom_point(size=2.5,shape=21,fill="white",aes(color=class), position=position_dodge(width=0.55))+
+         labs(x='Odds Ratio')+
+            theme(axis.title.y = element_blank(),
+              legend.title = element_blank())+
+                scale_color_manual(values = c('1' = 'dodgerblue4', '2' = 'red3', '3' = 'dodgerblue1'),
+                     labels = c('1' = "High Symptoms VS. No Symptoms", 
+                                '2' = "Moderate Symptoms VS. No Symptoms", 
+                                '3' = "Low Symptoms VS. No Symptoms"),
+                       limits = c('1', '2', '3')) +  # Change the order of the legend)
+                      scale_y_discrete(labels=c("SLEEP" = "Sleep Disturbances",  "IBS" = "Irritable Bowel", "ASTHMA" = "Asthma", "BMI" = "BMI", "PREG" = "Pregnancy Complications", "OBST" = "Obstetric Complications",  "PREMAT" = "Preterm birth", "SMALL" = "Small at Birth", "CSECT" = "C-Section", "DEPRESS" = "Depression", "ANX" = "Anxiety", "ADHD" = "ADHD", "OPPOSIT" = "Oppositional Defiant Problems", "CONDUCT" = "Conduct Problems",  "STRESS" = "Stress",  "RAVLT" = "Verbal Memory", "FES_P" = "Family Conflict - Parent Rating", "FES_Y" = "Family Conflict - Youth Rating",   "TRAUMA" = "Trauma", "MALTR" = "Maltreatment", "FIRST_D" = "First-Degree Mania"))
+```
+
+
+```{r}
+#Plot absolute effect sizes (Cohen's d). 
+riskfactors_wo_c %>% 
+    mutate(lower_95_d=if_else(est_d<0,lower_95_d*-1,lower_95_d),
+         upper_95_d=if_else(est_d<0,upper_95_d*-1,upper_95_d),
+         est_d=if_else(est_d<0,est_d*-1,est_d)) %>%
+  ggplot(aes(x=est_d,y=reorder(var,OR)))+
+  geom_vline(xintercept=0,linetype='dashed',linewidth=0.1)+
+  geom_errorbar(aes(xmin=lower_95_d,xmax=upper_95_d,color=class),width=0,
+                linewidth=2.5,alpha=0.8,position=position_dodge(width=0.55))+
+  geom_point(size=2.5,shape=21,fill="white",aes(color=class),
+             position=position_dodge(width=0.55))+
+  labs(x=expression("Cohen's"~italic(d)))+
+  theme(axis.title.y = element_blank(),
+        legend.title = element_blank())+
+                scale_color_manual(values = c('1' = 'dodgerblue4', '2' = 'red3', '3' = 'dodgerblue1'),
+                     labels = c('1' = "High Symptoms VS. No Symptoms", 
+                                '2' = "Moderate Symptoms VS. No Symptoms", 
+                                '3' = "Low Symptoms VS. No Symptoms"),
+                       limits = c('1', '2', '3')) +  # Change the order of the legend)
+                      scale_y_discrete(labels=c("SLEEP" = "Sleep Disturbances",  "IBS" = "Irritable Bowel", "ASTHMA" = "Asthma", "BMI" = "BMI", "PREG" = "Pregnancy Complications", "OBST" = "Obstetric Complications",  "PREMAT" = "Preterm birth", "SMALL" = "Small at Birth", "CSECT" = "C-Section", "DEPRESS" = "Depression", "ANX" = "Anxiety", "ADHD" = "ADHD", "OPPOSIT" = "Oppositional Defiant Problems", "CONDUCT" = "Conduct Problems",  "STRESS" = "Stress",  "RAVLT" = "Verbal Memory", "FES_P" = "Family Conflict - Parent Rating", "FES_Y" = "Family Conflict - Youth Rating",   "TRAUMA" = "Trauma", "MALTR" = "Maltreatment", "FIRST_D" = "First-Degree Mania"))
+```
+
+## Demographics Only
+```{r}
+# Plot Odds Ratio
+covariates %>%    
+ggplot(aes(x=OR,y=reorder(var,OR)))+
+  geom_vline(xintercept=1,linetype='dashed',linewidth=0.1)+
+    geom_errorbar(aes(xmin=lower_95,xmax=upper_95,color=class),width=0, linewidth=2.5,alpha=0.8,position=position_dodge(width=0.55))+
+      geom_point(size=2.5,shape=21,fill="white",aes(color=class), position=position_dodge(width=0.55))+
+         labs(x='Odds Ratio')+
+            theme(axis.title.y = element_blank(),
+              legend.title = element_blank())+
+                scale_color_manual(values = c('1' = 'dodgerblue4', '2' = 'red3', '3' = 'dodgerblue1'),
+                     labels = c('1' = "Low Symptoms VS. No Symptoms", 
+                                '2' = "High Symptoms VS. No Symptoms", 
+                                '3' = "Moderate Symptoms VS. No Symptoms"),
+                       limits = c('1', '3', '2')) +  # Change the order of the legend)
+                      scale_y_discrete(labels=c("SEX" = "Sex", "RACE_B" = "Race - Black", "RACE_AI" = "Race - American Indian/ Alaskan", "RACE_P" = "Race - Pacific", "RACE_AS" = "Race - Asian", "RACE_O" = "Race - Other/ Multiple", "ETHN" = "Ethnicity - Hispanic", "INR" = "Socioeconomic Status"))
+```
+
+```{r}
+#Plot absolute effect sizes (Cohen's d). 
+covariates %>% 
+    mutate(lower_95_d=if_else(est_d<0,lower_95_d*-1,lower_95_d),
+         upper_95_d=if_else(est_d<0,upper_95_d*-1,upper_95_d),
+         est_d=if_else(est_d<0,est_d*-1,est_d)) %>%
+  ggplot(aes(x=est_d,y=reorder(var,OR)))+
+  geom_vline(xintercept=0,linetype='dashed',linewidth=0.1)+
+  geom_errorbar(aes(xmin=lower_95_d,xmax=upper_95_d,color=class),width=0,
+                linewidth=2.5,alpha=0.8,position=position_dodge(width=0.55))+
+  geom_point(size=2.5,shape=21,fill="white",aes(color=class),
+             position=position_dodge(width=0.55))+
+  labs(x=expression("Cohen's"~italic(d)))+
+  theme(axis.title.y = element_blank(),
+        legend.title = element_blank())+
+                scale_color_manual(values = c('1' = 'dodgerblue4', '2' = 'red3', '3' = 'dodgerblue1'),
+                     labels = c('1' = "Low Symptoms VS. No Symptoms", 
+                                '2' = "High Symptoms VS. No Symptoms", 
+                                '3' = "Moderate Symptoms VS. No Symptoms"),
+                       limits = c('1', '3', '2')) +  # Change the order of the legend)
+                      scale_y_discrete(labels=c("SEX" = "Sex", "RACE_B" = "Race - Black", "RACE_AI" = "Race - American Indian/ Alaskan", "RACE_P" = "Race - Pacific", "RACE_AS" = "Race - Asian", "RACE_O" = "Race - Other/ Multiple", "ETHN" = "Ethnicity - Hispanic", "INR" = "Socioeconomic Status"))
+```
+
+## Risk Factors with Covariates
+```{r}
+rm(list = ls())
+load("E:/data/riskfactors_with_covariates_FINAL.rdata")
+riskfactors_with_covariates_FINAL$class = as.factor(riskfactors_with_covariates_FINAL$class)
+```
+
+```{r}
+# Plot Odds Ratio
+riskfactors_with_covariates_FINAL %>%    
+ggplot(aes(x=OR,y=reorder(var,OR)))+
+  geom_vline(xintercept=1,linetype='dashed',linewidth=0.1)+
+    geom_errorbar(aes(xmin=lower_95,xmax=upper_95,color=class),width=0, linewidth=2.5,alpha=0.8,position=position_dodge(width=0.55))+
+      geom_point(size=2.5,shape=21,fill="white",aes(color=class), position=position_dodge(width=0.55))+
+         labs(x='Odds Ratio')+
+            theme(axis.title.y = element_blank(),
+              legend.title = element_blank())+
+                scale_color_manual(values = c('1' = 'dodgerblue4', '2' = 'red3', '3' = 'dodgerblue1'),
+                     labels = c('1' = "High Symptoms VS. No Symptoms", 
+                                '2' = "Moderate Symptoms VS. No Symptoms", 
+                                '3' = "Low Symptoms VS. No Symptoms"),
+                       limits = c('1', '2', '3')) +  # Change the order of the legend)
+                      scale_y_discrete(labels=c("SLEEP" = "Sleep Disturbances",  "IBS" = "Irritable Bowel", "ASTHMA" = "Asthma", "BMI" = "BMI", "PREG" = "Pregnancy Complications", "OBST" = "Obstetric Complications",  "PREMAT" = "Preterm birth", "SMALL" = "Small at Birth", "CSECT" = "C-Section", "DEPRESS" = "Depression", "ANX" = "Anxiety", "ADHD" = "ADHD", "OPPOSIT" = "Oppositional Defiant Problems", "CONDUCT" = "Conduct Problems",  "STRESS" = "Stress",  "RAVLT" = "Verbal Memory", "FES_P" = "Family Conflict - Parent Rating", "FES_Y" = "Family Conflict - Youth Rating",   "TRAUMA" = "Trauma", "MALTR" = "Maltreatment", "FIRST_D" = "First-Degree Mania"))
+```
+
+
+```{r}
+#Plot absolute effect sizes (Cohen's d). 
+riskfactors_with_covariates_FINAL %>% 
+    mutate(lower_95_d=if_else(est_d<0,lower_95_d*-1,lower_95_d),
+         upper_95_d=if_else(est_d<0,upper_95_d*-1,upper_95_d),
+         est_d=if_else(est_d<0,est_d*-1,est_d)) %>%
+  ggplot(aes(x=est_d,y=reorder(var,OR)))+
+  geom_vline(xintercept=0,linetype='dashed',linewidth=0.1)+
+  geom_errorbar(aes(xmin=lower_95_d,xmax=upper_95_d,color=class),width=0,
+                linewidth=2.5,alpha=0.8,position=position_dodge(width=0.55))+
+  geom_point(size=2.5,shape=21,fill="white",aes(color=class),
+             position=position_dodge(width=0.55))+
+  labs(x=expression("Cohen's"~italic(d)))+
+  theme(axis.title.y = element_blank(),
+        legend.title = element_blank())+
+                scale_color_manual(values = c('1' = 'dodgerblue4', '2' = 'red3', '3' = 'dodgerblue1'),
+                     labels = c('1' = "High Symptoms VS. No Symptoms", 
+                                '2' = "Moderate Symptoms VS. No Symptoms", 
+                                '3' = "Low Symptoms VS. No Symptoms"),
+                       limits = c('1', '2', '3')) +  # Change the order of the legend)
+                      scale_y_discrete(labels=c("SLEEP" = "Sleep Disturbances",  "IBS" = "Irritable Bowel", "ASTHMA" = "Asthma", "BMI" = "BMI", "PREG" = "Pregnancy Complications", "OBST" = "Obstetric Complications",  "PREMAT" = "Preterm birth", "SMALL" = "Small at Birth", "CSECT" = "C-Section", "DEPRESS" = "Depression", "ANX" = "Anxiety", "ADHD" = "ADHD", "OPPOSIT" = "Oppositional Defiant Problems", "CONDUCT" = "Conduct Problems",  "STRESS" = "Stress",  "RAVLT" = "Verbal Memory", "FES_P" = "Family Conflict - Parent Rating", "FES_Y" = "Family Conflict - Youth Rating",   "TRAUMA" = "Trauma", "MALTR" = "Maltreatment", "FIRST_D" = "First-Degree Mania"))
+```
+
+
+
+## Plot Sleep Subscales
+```{r}
+rm(list = ls())
+load("E:/data/riskfactors_sleep_FINAL.rdata")
+```
+
+```{r}
+# Plot Odds Ratio
+riskfactors_sleep_FINAL %>%    
+ggplot(aes(x=OR,y=reorder(var,OR)))+
+  geom_vline(xintercept=1,linetype='dashed',linewidth=0.1)+
+    geom_errorbar(aes(xmin=lower_95,xmax=upper_95,color=class),width=0, linewidth=2.5,alpha=0.8,position=position_dodge(width=0.55))+
+      geom_point(size=2.5,shape=21,fill="white",aes(color=class), position=position_dodge(width=0.55))+
+         labs(x='Odds Ratio')+
+            theme(axis.title.y = element_blank(),
+              legend.title = element_blank())+
+                scale_color_manual(values = c('1' = 'dodgerblue4', '2' = 'red3', '3' = 'dodgerblue1'),
+                     labels = c('1' = "High Symptoms VS. No Symptoms", 
+                                '2' = "Moderate Symptoms VS. No Symptoms", 
+                                '3' = "Low Symptoms VS. No Symptoms"),
+                       limits = c('1', '2', '3')) +  # Change the order of the legend)
+                      scale_y_discrete(labels=c("DIMS" = "Disorders of Initiating and Maintaining Sleep", "SBD" = "Sleep Breathing disorders", "DA" = "Disorder of Arousal", "SWTD" = "Sleep-Wake transition Disorders", "DOES" = "Disorders of Excessive Somnolence", "SHY" = "Sleep Hyperhydrosis"))
+```
+
+
+```{r}
+#Plot absolute effect sizes (Cohen's d). 
+riskfactors_sleep_FINAL %>% 
+    mutate(lower_95_d=if_else(est_d<0,lower_95_d*-1,lower_95_d),
+         upper_95_d=if_else(est_d<0,upper_95_d*-1,upper_95_d),
+         est_d=if_else(est_d<0,est_d*-1,est_d)) %>%
+  ggplot(aes(x=est_d,y=reorder(var,OR)))+
+  geom_vline(xintercept=0,linetype='dashed',linewidth=0.1)+
+  geom_errorbar(aes(xmin=lower_95_d,xmax=upper_95_d,color=class),width=0,
+                linewidth=2.5,alpha=0.8,position=position_dodge(width=0.55))+
+  geom_point(size=2.5,shape=21,fill="white",aes(color=class),
+             position=position_dodge(width=0.55))+
+  labs(x=expression("Cohen's"~italic(d)))+
+  theme(axis.title.y = element_blank(),
+        legend.title = element_blank())+
+                scale_color_manual(values = c('1' = 'dodgerblue4', '2' = 'red3', '3' = 'dodgerblue1'),
+                     labels = c('1' = "High Symptoms VS. No Symptoms", 
+                                '2' = "Moderate Symptoms VS. No Symptoms", 
+                                '3' = "Low Symptoms VS. No Symptoms"),
+                       limits = c('1', '2', '3')) +  # Change the order of the legend)
+                      scale_y_discrete(labels=c("DIMS" = "Disorders of Initiating and Maintaining Sleep", "SBD" = "Sleep Breathing disorders", "DA" = "Disorder of Arousal", "SWTD" = "Sleep-Wake transition Disorders", "DOES" = "Disorders of Excessive Somnolence", "SHY" = "Sleep Hyperhydrosis"))
+```
+
+
+
+## Correlation Plot
+
+This code computes and visualizes the correlation matrix for several psychological traits measured in the dataset (Depression, Anxiety, ADHD, Conduct Problems, Oppositional Behavior, and Stress). It helps assess how strongly these variables are related to each other.  
+
+If highly related traits (e.g., Depression & Anxiety) are strongly correlated, it confirms that the measures are capturing similar constructs. However, if correlations are too high (r > 0.9), it can indicate redundancy in the data. This is problematic in regression models because it makes it difficult to determine the unique effect of each variable. In this case, it might be necessary to adjust the analysis to avoid redundancy.  
+
+CBCL = Depression, Anxiety, Adhd, Conduct, Opposition, Stress  
+```{r}
+library(corrplot)
+rm(list = ls())
+
+#load("E:/data/riskfactors_without_covariates.rdata")
+#load("E:/data/riskfactors_with_covariates.rdata")
+#"G:\Geteilte Ablagen\NeRD_lab\research_projects\ABCD_mania\code\MPLUS\new_data_predictors.csv"
+
+setwd("E:/code/MPLUS")
+data <- read.csv("new_data_predictors.csv", header = TRUE, stringsAsFactors = FALSE)
+
+# Select Variables
+# Define a vector of columns you want to select
+columns_to_select <- c("cbcl_scr_dsm5_depress_r_0", 
+                       "cbcl_scr_dsm5_anxdisord_r_0", 
+                       "cbcl_scr_dsm5_adhd_r_0", 
+                       "cbcl_scr_dsm5_opposit_r_0", 
+                       "cbcl_scr_dsm5_conduct_r_0", 
+                       "cbcl_scr_07_stress_r_0")
+
+# Select columns using the vector
+data <- data %>%
+  select(all_of(columns_to_select))
+
+# Create correlation matrix
+cor_matrix <-cor(data,use='pairwise.complete.obs')
+# Rename the column and row in the correlation matrix
+colnames(cor_matrix)[colnames(cor_matrix) == "cbcl_scr_dsm5_depress_r_0"] <- "Depression"
+rownames(cor_matrix)[rownames(cor_matrix) == "cbcl_scr_dsm5_depress_r_0"] <- "Depression"
+colnames(cor_matrix)[colnames(cor_matrix) == "cbcl_scr_dsm5_anxdisord_r_0"] <- "Anxiety"
+rownames(cor_matrix)[rownames(cor_matrix) == "cbcl_scr_dsm5_anxdisord_r_0"] <- "Anxiety"
+colnames(cor_matrix)[colnames(cor_matrix) == "cbcl_scr_dsm5_adhd_r_0"] <- "ADHD"
+rownames(cor_matrix)[rownames(cor_matrix) == "cbcl_scr_dsm5_adhd_r_0"] <- "ADHD"
+colnames(cor_matrix)[colnames(cor_matrix) == "cbcl_scr_dsm5_opposit_r_0"] <- "Opposition"
+rownames(cor_matrix)[rownames(cor_matrix) == "cbcl_scr_dsm5_opposit_r_0"] <- "Opposition"
+colnames(cor_matrix)[colnames(cor_matrix) == "cbcl_scr_dsm5_conduct_r_0"] <- "Conduct"
+rownames(cor_matrix)[rownames(cor_matrix) == "cbcl_scr_dsm5_conduct_r_0"] <- "Conduct"
+colnames(cor_matrix)[colnames(cor_matrix) == "cbcl_scr_07_stress_r_0"] <- "Stress"
+rownames(cor_matrix)[rownames(cor_matrix) == "cbcl_scr_07_stress_r_0"] <- "Stress"
+
+
+# get p-values
+testRes = cor.mtest(data, conf.level = 0.95)
+
+#basic plot.
+corrplot(cor_matrix,method='color',
+         p.mat = testRes$p,
+         diag=F,
+         tl.col = 'black',
+         addCoef.col = 'black')
+```
+
+Interpretation:  Depression, Anxiety, ADHD, and Conduct Problems frequently coexist in clinical populations. Higher stress levels are expected to correlate with all other symptoms.
+This pattern reflects reality rather than redundancy.  
+Correlations do not exceed 0.90, meaning each variable still provides unique information.
+
+ 
+
+
+
+

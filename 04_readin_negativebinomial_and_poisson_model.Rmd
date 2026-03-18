@@ -1,0 +1,1708 @@
+---
+title: "Mania_Modelling"
+author: "by_Jasmin_Doenicke"
+date: "Step 4"
+output:
+  html_document:
+    toc: yes
+    theme: united
+  pdf_document:
+    toc: yes
+  word_document:
+    toc: yes
+---
+
+
+Run Mplus before running this code! 
+You may consult the "ReadMe" for detailed Mplus instructions.
+
+# STARTER CODE
+```{r, echo=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(MplusAutomation)
+
+setwd("E:")
+
+#load data
+load(file='E:/data/GBI_demographics.rdata')
+#read id's from input csv
+data_csv<-read.csv('E:/code/MPLUS/data_headers.csv',
+                   header=T)
+
+##Set theme
+theme_set(theme_bw())
+```
+
+# Plot MPlus Models
+## NEGATIVE BINOMIAL
+### Linear 1-Class
+```{r}
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/00_linear_1class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Quadratic 1-Class
+```{r}
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/00_quadratic_1_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Linear 2-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/01_linear_2class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Quadratic 2-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/02_quadratic_2_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Linear 3-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/03_linear_3class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Quadratic 3-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/04_quadratic_3_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Linear 4-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/05_linear_4class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#NEW CODE: change the order of the classes to match the quadratic model. Use this code if you need to.
+merge<-merge %>% mutate(class=case_when(class==1~3, #means 'when class_l=1, change it to …'.
+                                            class==2~4,#means 'when class_l=2, change it to …'.
+                                            class==3~2,
+                                            class==4~1))
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+  #class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+
+### Quadratic 4-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/06_quadratic_4_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class4
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Linear 5-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/07_linear_5class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+## NEW: change class order 
+
+merge<-merge %>% mutate(class=case_when(class==1~1, #means 'when class_l=1, change it to …'.
+                                            class==2~3,#means 'when class_l=2, change it to …'.
+                                            class==3~2,
+                                            class==4~5, 
+                                            class==5~4))
+
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='3') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class4
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class5
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='5') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Quadratic 5-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/08_quadratic_5_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+### NEW: Change class order
+merge<-merge %>% mutate(class=case_when(class==1~4, #means 'when class_l=1, change it to …'.
+                                            class==2~2,#means 'when class_l=2, change it to …'.
+                                            class==3~5,
+                                            class==4~1, 
+                                            class==5~3))
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class4
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class5
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='5') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Linear 6-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/09_linear_6_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class4
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+  #class5
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='5') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class6
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='6') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Quadratic 6-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/neg_binomial/10_quadratic_6_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class4
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class5
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='5') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class6
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='6') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+## POISSON
+### Linear 1-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/00_linear_1class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Quadratic 1-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/00_quadratic_1_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Linear 2-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/01_linear_2class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Quadratic 2-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/02_quadratic_2_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Linear 3-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/03_linear_3class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Quadratic 3-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/04_quadratic_3_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Linear 4-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/05_linear_4class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+  #class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+
+### Quadratic 4-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/06_quadratic_4_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class4
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Linear 5-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/07_linear_5class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='3') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class4
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class5
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='5') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Quadratic 5-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/08_quadratic_5_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class4
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class5
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='5') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Linear 6-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/09_linear_6class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class4
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+  #class5
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='5') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class6
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='6') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+### Quadratic 6-Class
+```{r}
+
+mplus2<-readModels('E:/code/MPLUS/poisson/10_quadratic_6_class.out',
+                  what=c("savedata"))$savedata
+
+#merge all data
+mplus2merge<-cbind(data_csv,mplus2)
+mplus2merge<-mplus2merge %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,mplus2merge)
+
+#plot all classes
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot with individual lines
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+
+#plot individuals per group
+#class1
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+#class2
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class3
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class4
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class5
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='5') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+  
+#class6
+  merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='6') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 2), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))
+```
+
+

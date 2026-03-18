@@ -1,0 +1,297 @@
+---
+title: "Mania_Modelling"
+author: "by_Jasmin_Doenicke"
+date: "Step 5"
+output:
+  html_document:
+    toc: yes
+    theme: united
+  pdf_document:
+    toc: yes
+  word_document:
+    toc: yes
+---
+
+Previously, I explored potential mania trajectories in the dataset, identifying between 1 to 6 possible groups with varying distributions. The plots in Step 4 illustrate all these options—but which model is the best fit? To determine this, I will examine the results and fit statistics. Please have a look at "05_model_comparison_table_05.pdf" for the results!
+
+# STARTER CODE
+```{r, error=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+```{r, error=FALSE}
+library(tidyverse)
+library(MplusAutomation)
+library(tidyr)
+library(dplyr)
+library(stringr)
+
+setwd("E:")
+
+#load data
+load(file='E:/data/GBI_demographics.rdata')
+#read id's from input csv
+data_csv<-read.csv('E:/code/MPLUS/data_headers.csv',
+                   header=T)
+
+##Set theme
+theme_set(theme_bw())
+```
+
+
+# Negative Binomial
+
+Let's read in results from the latent analysis from Mplus using the readModels() function from the MplusAutomation package in R.
+
+## Read In Models
+
+Firstly, let's read in the model summaries. This retrieves fit indices (e.g., AIC, BIC, entropy, log-likelihood) for different models. This helps in model comparison to determine the best number of classes.
+
+
+```{r, error=FALSE}
+# 1-Class
+m1_nb_l <-readModels('E:/code/MPLUS/neg_binomial/00_linear_1class.out',
+                  what=c("summaries"))$summaries
+m1_nb_q <-readModels('E:/code/MPLUS/neg_binomial/00_quadratic_1class.out',
+                  what=c("summaries"))$summaries
+
+# 2-Class
+m2_nb_l <-readModels('E:/code/MPLUS/neg_binomial/01_linear_2class.out',
+                  what=c("summaries"))$summaries
+m2_nb_q <-readModels('E:/code/MPLUS/neg_binomial/01_quadratic_2class.out',
+                  what=c("summaries"))$summaries
+
+# 3-Class
+m3_nb_l <-readModels('E:/code/MPLUS/neg_binomial/02_linear_3class.out',
+                  what=c("summaries"))$summaries
+m3_nb_q <-readModels('E:/code/MPLUS/neg_binomial/02_quadratic_3class.out',
+                  what=c("summaries"))$summaries
+
+# 4-Class
+m4_nb_l <-readModels('E:/code/MPLUS/neg_binomial/03_linear_4class.out',
+                  what=c("summaries"))$summaries
+m4_nb_q <-readModels('E:/code/MPLUS/neg_binomial/03_quadratic_4class.out',
+                  what=c("summaries"))$summaries
+
+# 5-Class
+m5_nb_l <-readModels('E:/code/MPLUS/neg_binomial/04_linear_5class.out',
+                  what=c("summaries"))$summaries
+m5_nb_q <-readModels('E:/code/MPLUS/neg_binomial/04_quadratic_5class.out',
+                  what=c("summaries"))$summaries
+
+# 6-Class
+m6_nb_l <-readModels('E:/code/MPLUS/neg_binomial/05_linear_6class.out',
+                  what=c("summaries"))$summaries
+m6_nb_q <-readModels('E:/code/MPLUS/neg_binomial/05_quadratic_6class.out',
+                  what=c("summaries"))$summaries
+```
+
+## Read in Classes 
+
+Secondly, let's read in the class counts. This extracts the number of individuals assigned to each latent class and helps assess class sizes and interpretability of solutions.
+
+```{r, error=FALSE}
+# 1-Class
+class_m1_nb_l <-readModels('E:/code/MPLUS/neg_binomial/00_linear_1class.out',
+                        what=c("class_counts"))$class_counts
+class_m1_nb_q <-readModels('E:/code/MPLUS/neg_binomial/00_quadratic_1class.out',
+                        what=c("class_counts"))$class_counts
+
+# 2-Class
+class_m2_nb_l <-readModels('E:/code/MPLUS/neg_binomial/01_linear_2class.out',
+                        what=c("class_counts"))$class_counts
+class_m2_nb_q <-readModels('E:/code/MPLUS/neg_binomial/01_quadratic_2class.out',
+                        what=c("class_counts"))$class_counts
+
+# 3-Class
+class_m3_nb_l <-readModels('E:/code/MPLUS/neg_binomial/02_linear_3class.out',
+                        what=c("class_counts"))$class_counts
+class_m3_nb_q <-readModels('E:/code/MPLUS/neg_binomial/02_quadratic_3class.out',
+                        what=c("class_counts"))$class_counts
+
+# 4-Class
+class_m4_nb_l <-readModels('E:/code/MPLUS/neg_binomial/03_linear_4class.out',
+                        what=c("class_counts"))$class_counts
+class_m4_nb_q <-readModels('E:/code/MPLUS/neg_binomial/03_quadratic_4class.out',
+                        what=c("class_counts"))$class_counts
+
+# 5-Class
+class_m5_nb_l <-readModels('E:/code/MPLUS/neg_binomial/04_linear_5class.out',
+                        what=c("class_counts"))$class_counts
+class_m5_nb_q <-readModels('E:/code/MPLUS/neg_binomial/04_quadratic_5class.out',
+                        what=c("class_counts"))$class_counts
+
+# 6-Class
+class_m6_nb_l <-readModels('E:/code/MPLUS/neg_binomial/05_linear_6class.out',
+                        what=c("class_counts"))$class_counts
+class_m6_nb_q <-readModels('E:/code/MPLUS/neg_binomial/05_quadratic_6class.out',
+                        what=c("class_counts"))$class_counts
+```
+
+
+# Poisson
+## Read in models
+
+Firstly, let's read in the model summaries. This retrieves fit indices (e.g., AIC, BIC, entropy, log-likelihood) for different models. This helps in model comparison to determine the best number of classes.
+
+```{r, error=FALSE}
+# 1-Class
+m1_p_l <-readModels('E:/code/MPLUS/poisson/00_linear_1class.out',
+                  what=c("summaries"))$summaries
+m1_p_q <-readModels('E:/code/MPLUS/poisson/00_quadratic_1class.out',
+                  what=c("summaries"))$summaries
+
+# 2-Class
+m2_p_l <-readModels('E:/code/MPLUS/poisson/01_linear_2class.out',
+                  what=c("summaries"))$summaries
+m2_p_q <-readModels('E:/code/MPLUS/poisson/01_quadratic_2class.out',
+                  what=c("summaries"))$summaries
+
+# 3-Class
+m3_p_l <-readModels('E:/code/MPLUS/poisson/02_linear_3class.out',
+                  what=c("summaries"))$summaries
+m3_p_q <-readModels('E:/code/MPLUS/poisson/02_quadratic_3class.out',
+                  what=c("summaries"))$summaries
+
+# 4-Class
+m4_p_l <-readModels('E:/code/MPLUS/poisson/03_linear_4class.out',
+                  what=c("summaries"))$summaries
+m4_p_q <-readModels('E:/code/MPLUS/poisson/03_quadratic_4class.out',
+                  what=c("summaries"))$summaries
+
+# 5-Class
+m5_p_l <-readModels('E:/code/MPLUS/poisson/04_linear_5class.out',
+                  what=c("summaries"))$summaries
+m5_p_q <-readModels('E:/code/MPLUS/poisson/04_quadratic_5class.out',
+                  what=c("summaries"))$summaries
+
+# 6-Class
+m6_p_l <-readModels('E:/code/MPLUS/poisson/05_linear_6class.out',
+                  what=c("summaries"))$summaries
+m6_p_q <-readModels('E:/code/MPLUS/poisson/05_quadratic_6class.out',
+                  what=c("summaries"))$summaries
+```
+
+## Read in Classes
+
+Secondly, let's read in the class counts. This extracts the number of individuals assigned to each latent class and helps assess class sizes and interpretability of solutions.
+
+```{r, error=FALSE}
+# 1-Class
+class_m1_p_l <-readModels('E:/code/MPLUS/poisson/00_linear_1class.out',
+                        what=c("class_counts"))$class_counts
+class_m1_p_q <-readModels('E:/code/MPLUS/poisson/00_quadratic_1class.out',
+                        what=c("class_counts"))$class_counts
+
+# 2-Class
+class_m2_p_l <-readModels('E:/code/MPLUS/poisson/01_linear_2class.out',
+                        what=c("class_counts"))$class_counts
+class_m2_p_q <-readModels('E:/code/MPLUS/poisson/01_quadratic_2class.out',
+                        what=c("class_counts"))$class_counts
+
+# 3-Class
+class_m3_p_l <-readModels('E:/code/MPLUS/poisson/02_linear_3class.out',
+                        what=c("class_counts"))$class_counts
+class_m3_p_q <-readModels('E:/code/MPLUS/poisson/02_quadratic_3class.out',
+                        what=c("class_counts"))$class_counts
+
+# 4-Class
+class_m4_p_l <-readModels('E:/code/MPLUS/poisson/03_linear_4class.out',
+                        what=c("class_counts"))$class_counts
+class_m4_p_q <-readModels('E:/code/MPLUS/poisson/03_quadratic_4class.out',
+                        what=c("class_counts"))$class_counts
+
+# 5-Class
+class_m5_p_l <-readModels('E:/code/MPLUS/poisson/04_linear_5class.out',
+                        what=c("class_counts"))$class_counts
+class_m5_p_q <-readModels('E:/code/MPLUS/poisson/04_quadratic_5class.out',
+                        what=c("class_counts"))$class_counts
+
+# 6-Class
+class_m6_p_l <-readModels('E:/code/MPLUS/poisson/05_linear_6class.out',
+                        what=c("class_counts"))$class_counts
+class_m6_p_q <-readModels('E:/code/MPLUS/poisson/05_quadratic_6class.out',
+                        what=c("class_counts"))$class_counts
+```
+
+# Summarize Model Results
+
+This organizes and processes model summary results from models using Poisson (P) and Negative Binomial (NB) distributions.
+
+```{r, error=FALSE}
+colnames(m1_nb_l)
+colnames(m2_nb_l)
+colnames(m3_p_q)
+
+# fixing m3_p_q
+m3_p_q = m3_p_q %>% mutate(T11_VLMR_Mean = 1, T11_VLMR_SD = 1)
+                           
+# 1-Class Models separate
+sums_1Class<-rbind(m1_nb_l, m1_nb_q, m1_p_l, m1_p_q) %>% select(Filename,Parameters,AIC,BIC,aBIC) %>% mutate(model = c("NB_Linear", "NB_Quadratic", "P_Linear", "P_Quadratic"))
+
+# All 2 to 6 class models
+sums<-rbind(m2_nb_l, m2_nb_q, m3_nb_l, m3_nb_q, m4_nb_l, m4_nb_q, m5_nb_l, m5_nb_q, m6_nb_l, m6_nb_q, m2_p_l, m2_p_q, m3_p_l, m3_p_q, m4_p_l, m4_p_q, m5_p_l, m5_p_q, m6_p_l, m6_p_q) %>%  select(Filename,Parameters,AIC,BIC,aBIC,Entropy,T11_VLMR_PValue,T11_LMR_PValue) %>% mutate(model = c("NB","NB", "NB", "NB", "NB", "NB", "NB", "NB", "NB", "NB", "P", "P", "P", "P", "P", "P", "P", "P", "P", "P" ))
+
+# Linear Poisson
+sums_Linear_P<-rbind(m2_p_l, m3_p_l, m4_p_l, m5_p_l, m6_p_l) %>%  select(Filename,Parameters,AIC,BIC,aBIC,Entropy,T11_VLMR_PValue,T11_LMR_PValue)
+
+# Linear Negative Binomial
+sums_Linear_NB<-rbind(m2_nb_l, m3_nb_l, m4_nb_l, m5_nb_l, m6_nb_l) %>%  select(Filename,Parameters,AIC,BIC,aBIC,Entropy,T11_VLMR_PValue,T11_LMR_PValue) 
+
+# Quadratic Poisson
+sums_Quadratic_P <-rbind(m2_p_q, m3_p_q, m4_p_q, m5_p_q, m6_p_q) %>%  select(Filename,Parameters,AIC,BIC,aBIC,Entropy,T11_VLMR_PValue,T11_LMR_PValue) 
+
+# Quadratic Negative Binomial
+sums_Quadratic_NB <-rbind(m2_nb_q, m3_nb_q, m4_nb_q, m5_nb_q, m6_nb_q) %>%  select(Filename,Parameters,AIC,BIC,aBIC,Entropy,T11_VLMR_PValue,T11_LMR_PValue)
+```
+
+
+```{r, error=FALSE}
+#rename filename column
+sums <- sums %>% 
+  separate_wider_delim(Filename, delim = "_", names = c(NA, NA, "Model", "Model2"), too_many = "drop", too_few = "align_start") %>%
+  mutate(Model2 = if_else(str_detect(Model2, "\\."), Model2, NA_character_)) %>%
+  separate(Model2, into = c("Model2", NA), sep = "\\.", extra = "drop", fill = "right") %>%
+  unite("Model", Model:Model2, na.rm = TRUE)
+```
+
+
+# Class Count 
+
+Let's merge and summarize class proportion estimates from different latent trajectory analysis (LTA) models across multiple class solutions (2 to 6 classes). The goal is to compare how class proportions change across models with different distributions (Poisson vs. Negative Binomial) and different trajectory assumptions (Linear vs. Quadratic).
+For the final analysis, quadratic models are removed, since they cannot be used in LTA with only three datapoints - so this is only a demonstration.
+
+```{r, error=FALSE}
+# Poisson Linear
+class_p_linear <-class_m2_p_l$modelEstimated %>% full_join(class_m3_p_l$modelEstimated,by="class",suffix=c("_m2_p","_m3_p")) %>%
+  full_join(class_m4_p_l$modelEstimated,by="class") %>%
+  full_join(class_m5_p_l$modelEstimated,by='class',suffix=c("_m4_p","_m5_p")) %>%
+  full_join(class_m6_p_l$modelEstimated,by="class") %>%
+  rename(proportion_m6_p=proportion) %>%
+  select(class,starts_with('prop')) %>% round(2)
+
+# Poisson Quadratic
+class_p_quadratic <-class_m2_p_q$modelEstimated %>% full_join(class_m3_p_q$modelEstimated,by="class",suffix=c("_m2_p","_m3_p")) %>%
+  full_join(class_m4_p_q$modelEstimated,by="class") %>%
+  full_join(class_m5_p_q$modelEstimated,by='class',suffix=c("_m4_p","_m5_p")) %>%
+  full_join(class_m6_p_q$modelEstimated,by="class") %>%
+  rename(proportion_m6_p=proportion) %>%
+  select(class,starts_with('prop')) %>% round(2)
+
+
+# NB Linear
+class_nb_linear <-class_m2_nb_l$modelEstimated %>% full_join(class_m3_nb_l$modelEstimated,by="class",suffix=c("_m2_nb","_m3_nb")) %>%
+  full_join(class_m4_nb_l$modelEstimated,by="class") %>%
+  full_join(class_m5_nb_l$modelEstimated,by='class',suffix=c("_m4_nb","_m5_nb")) %>%
+  full_join(class_m6_nb_l$modelEstimated,by="class") %>%
+  rename(proportion_m6_nb=proportion) %>%
+  select(class,starts_with('prop')) %>% round(2)
+
+# NB Quadratic
+class_nb_quadratic <-class_m2_nb_q$modelEstimated %>% full_join(class_m3_nb_q$modelEstimated,by="class",suffix=c("_m2_nb","_m3_nb")) %>%
+  full_join(class_m4_nb_q$modelEstimated,by="class") %>%
+  full_join(class_m5_nb_q$modelEstimated,by='class',suffix=c("_m4_nb","_m5_nb")) %>%
+  full_join(class_m6_nb_q$modelEstimated,by="class") %>%
+  rename(proportion_m6_nb=proportion) %>%
+  select(class,starts_with('prop')) %>% round(2)
+```

@@ -1,0 +1,106 @@
+---
+title: "Mania_Modelling"
+author: "by_Jasmin_Doenicke"
+date: "Step1"
+output:
+  html_document:
+    toc: yes
+    theme: united
+  pdf_document:
+    toc: yes
+  word_document:
+    toc: yes
+---
+
+
+
+
+# STARTER CODE
+
+```{r, warning=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+Open Libraries
+```{r, echo = T, results = 'hide'}
+library(ggplot2)
+library(psych)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+```
+
+
+
+
+
+# Load Mania data
+10-ItemMania-Scale from GBI => pgbi_p_ss_score (Mania)
+```{r warning=FALSE, include = FALSE}
+setwd("E:/release_5.1/core/mental-health")
+mh_p_gbi <- read_csv("mh_p_gbi.csv")
+```
+
+```{r, warning=FALSE}
+setwd("E:/release_5.1/core/mental-health")
+mh_p_gbi <- read_csv("mh_p_gbi.csv")
+mh_p_gbi$eventname <- as.factor(mh_p_gbi$eventname)
+
+# find out all categories
+unique(mh_p_gbi$eventname)
+```
+There is data at baseline, and at 1/2/3/4-year follow up.
+
+```{r, warning=FALSE}
+mh_p_gbi$eventname <- factor(mh_p_gbi$eventname, levels = c("baseline_year_1_arm_1", "1_year_follow_up_y_arm_1", "2_year_follow_up_y_arm_1", "3_year_follow_up_y_arm_1", "4_year_follow_up_y_arm_1")) 
+
+#create a nummerical variable with all measurement timepoints taken from the "eventname" factor
+mh_p_gbi$timepoint <- mh_p_gbi$eventname
+mh_p_gbi <- mh_p_gbi %>% mutate(timepoint=recode(timepoint,
+                                "baseline_year_1_arm_1" = "0",
+                                "1_year_follow_up_y_arm_1" = "1",
+                                "2_year_follow_up_y_arm_1" = "2",
+                                "3_year_follow_up_y_arm_1" = "3",
+                                "4_year_follow_up_y_arm_1" = "4"))
+mh_p_gbi$timepoint <- as.numeric(mh_p_gbi$timepoint)
+
+table(mh_p_gbi$eventname)
+```
+However, the data at the 3-year and 4-year follow up seems to be incomplete! Let's have a closer look by plotting the data next.
+
+```{r, warning=FALSE}
+#Plot mean
+library(ggplot2)
+ggplot(mh_p_gbi, aes(timepoint, pgbi_p_ss_score)) + 
+  geom_jitter(width = 0.3, height = 0, size = 0.5)+
+  ylab("Mania_Score")+
+  xlab("Point of Measurement")+ 
+  stat_summary(fun = mean, geom = "point", size = 2, col = "red")  +
+  ggtitle("10-item Mania Scale (from Parent General Behavior Inventory) - Parent") +
+  theme_light()
+```
+
+The distribution and mean are similar across measurements. 
+
+```{r, warning=FALSE}
+# Count how many in each event! 
+mh_p_gbi %>% count(eventname)
+mh_p_gbi %>% filter(!is.na(pgbi_p_ss_score)) %>% count(eventname)
+```
+
+After removing the NAs, there is clearly only usable data in baseline, follow-up 1, and follow-up2!
+
+```{r, warning=FALSE}
+data_GBI = mh_p_gbi
+
+# save data
+#save(data_GBI,file="E:/data/20240506_dataGBI.rdata")
+```
+
+The saved, cleaned data will get saved in the "data" folder, so we can continue working with it!
+
+
+# Alternative Mania measures
+
+

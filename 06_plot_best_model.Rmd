@@ -1,0 +1,314 @@
+---
+title: "Mania_Modelling"
+author: "by_Jasmin_Doenicke"
+date: "Step 6"
+output:
+  html_document:
+    toc: yes
+    theme: united
+  pdf_document:
+    toc: yes
+  word_document:
+    toc: yes
+---
+
+Based on the "05_model_comparison.pdf" results, I have picked the best model!
+It's the linear 4-class negetive binomial model. This section of the analysis is performing latent class analysis (LCA) result integration, data merging, and visualization. 
+Let's begin!
+
+
+# STARTER Code
+```{r, error=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+```{r, error=FALSE}
+#libraries
+library(tidyverse)
+library(MplusAutomation)
+library(vtable)
+library(flextable)
+
+setwd("E:")
+
+#load data
+load(file='E:/data/GBI_demographics.rdata')
+
+#set theme
+theme_set(theme_bw())
+```
+
+
+```{r, error=FALSE}
+#read input for ids
+data_csv<-read.csv('E:/code/MPLUS/data_headers.csv', header=T)
+```
+
+#  Load Mplus Output 
+```{r, error=FALSE}
+model_L4<-readModels('E:/code/MPLUS/neg_binomial/03_linear_4class.out',
+what=c("savedata"))$savedata
+
+table(model_L4$C) # check class distribution
+```
+The class distribution looks well-structured! Class 1, the smallest group, [exhibits the highest mania symptoms*], with classes getting progressively larger, [and having progressively fewer symptoms]. Given this pattern, using the largest class (Class 4) with no symptoms as the reference category is the most logical choice for comparison.
+
+*Note: We do not see that the smallest class has the lowest symptoms in this table, this can be viewed further below.
+
+```{r, error=FALSE}
+# reorder from smallest to biggest - use if necessary (not the case now)
+#model_L4<-model_L4 %>% mutate(C=case_when(C==1~1, #means 'when class_l=1, change it to …'.
+#                                            C==2~2,#means 'when class_l=2, change it to …'.
+#                                            C==3~3,
+#                                            C==4~4))
+
+#merge with id data
+merge_csv<-cbind(data_csv,model_L4)
+merge_csv<-merge_csv %>% rename(class=C) %>% select(src_subject_id,class)
+merge<-inner_join(GBI_demographics,merge_csv)
+
+
+```
+
+
+# Plotting 
+
+Let's have a look at the best model to fit our data! 
+Linear 4-class negative-binomial model!
+
+First, plot all classes with 95% confidence intervals.
+
+```{r, error=FALSE}
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="4"| visit=="3")) %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1),aes(group=class))+ 
+  scale_x_continuous(breaks = scales::breaks_width(1))+
+  xlab("Visit")+
+  ylab("Mania Score")
+```
+
+Next, plot all classes with individual subject lines.
+```{r, error=FALSE}
+merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.1)+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))+
+                   scale_x_continuous(breaks = scales::breaks_width(1))+
+                    xlab("Visit")+
+                    ylab("Mania Score")
+```
+
+Plot individual subject lines in class 1 (smallest class, highest symptoms).
+```{r, error=FALSE}
+merge %>%
+  mutate(class=factor(class)) %>%
+  filter(!c(visit=="3"|visit=="4")) %>%
+  filter(class=='1') %>%
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey60')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))+ 
+                scale_x_continuous(breaks = scales::breaks_width(1))+
+                xlab("Visit")+
+                ylab("Mania Score")+
+                ylim(0,30)
+```
+
+Plot individual subject lines in class 2 (second-smallest class, moderate symptoms).
+```{r, error=FALSE}
+merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='2') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))+ 
+                scale_x_continuous(breaks = scales::breaks_width(1))+
+                xlab("Visit")+
+                ylab("Mania Score")+
+                ylim(0,30)
+```
+
+Plot individual subject lines in class 3 (second-biggest class, low symptoms).
+```{r, error=FALSE}
+merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='3') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))+ 
+                scale_x_continuous(breaks = scales::breaks_width(1))+
+                xlab("Visit")+
+                ylab("Mania Score")+
+                ylim(0,30)
+```
+
+Plot individual subject lines in class 4 (biggest class, minimal/ no symptoms).
+```{r, error=FALSE}
+merge %>%
+  mutate(class=factor(class)) %>%
+    filter(!c(visit=="3"|visit=="4")) %>%
+    filter(class=='4') %>%                # Change class here (ex. 2)
+  ggplot(aes(y=pgbi_p_ss_score,x=visit,color=class,fill=class))+
+  #geom_point()+
+  geom_line(aes(group=src_subject_id),alpha=0.2,color='grey80')+
+  geom_smooth(method="lm",formula=y ~ poly(x, 1), # quadratic: (x,2); linear: (x,1)
+              aes(group=class))+ 
+                scale_x_continuous(breaks = scales::breaks_width(1))+
+                xlab("Visit")+
+                ylab("Mania Score")+
+                ylim(0,30)
+```
+
+
+
+# Summary Table
+```{r}
+library(dplyr)
+library(flextable)
+library(officer)
+
+# Ensure merge0 is not empty before proceeding
+if (nrow(merge) > 0) {
+  merge0 <- merge %>% filter(visit == 0)
+
+  # Save as CSV with explicit path
+  sumtable(merge0,
+           vars = c("demo_sex_v2", "interview_age", "race", "ethnicity"),
+           group = "class", group.test = TRUE,
+           out = "csv", file = "E:/summary_stats_table.csv"
+  )
+
+  # Prepare data for the table
+  my_data <- merge0 %>% select(demo_sex_v2, interview_age, race, ethnicity, class)
+
+  # Summarize before creating flextable (prevents crashes)
+  grouped_data <- my_data %>%
+    group_by(class) %>%
+    summarise(
+      demo_sex_v2 = paste(unique(demo_sex_v2), collapse = ", "),
+      interview_age = round(mean(interview_age, na.rm = TRUE), 1),
+      race = paste(unique(race), collapse = ", "),
+      ethnicity = paste(unique(ethnicity), collapse = ", ")
+    )
+
+  # Convert to flextable
+  my_table <- flextable(grouped_data)
+
+  # Create a Word document and add the table
+  doc <- read_docx() %>%
+    body_add_flextable(my_table)
+
+  # Save Word document safely (use valid path)
+  doc_path <- "E:/demographics_table.docx"
+  if (file.access(dirname(doc_path), 2) == 0) {  # Check write permission
+    print(doc, target = doc_path)
+  } else {
+    print(doc, target = "demographics_table.docx")  # Save in current directory if E:/ is restricted
+  }
+
+} else {
+  warning("merge0 is empty. Skipping table generation.")
+}
+
+```
+
+
+
+# Plots
+## Demographics
+
+Let's plot N of individuals in each class. We can see below that Class 1 is the smallest, and the classes get progressively bigger.
+```{r, error=FALSE}
+merge0 %>%
+  mutate(class=as.factor(class)) %>%
+  ggplot(aes(x=class,fill=class))+
+  geom_bar()+
+  theme(legend.title = element_blank())
+```
+
+
+
+## Sex-Proportions
+
+Gender distribution shows that males (1) are more prevalent in the 'High Mania' class, while females (2) are increasingly represented in the lower mania classes.
+
+```{r, error=FALSE}
+merge0 %>%
+  mutate(class=as.factor(class)) %>%
+  group_by(class,demo_sex_v2) %>%
+  ggplot(aes(x=class,fill=class))+
+  geom_bar(position="fill",aes(fill=demo_sex_v2))+
+  scale_y_continuous(labels=scales::percent)+
+  theme(legend.title = element_blank())
+```
+
+## Ethnicity Proportions
+
+Individuals of Hispanic ethnicity are more prevalent in the 'High Mania' class, with representation decreasing progressively in the lower mania classes.
+
+```{r, error=FALSE}
+merge0 %>%
+  filter(!is.na(ethnicity)) %>%
+  mutate(class=as.factor(class)) %>%
+  ggplot(aes(x=class,fill=class))+
+  geom_bar(position="fill",aes(fill=ethnicity))+
+  scale_y_continuous(labels=scales::percent)+
+  theme(legend.title = element_blank())
+```
+
+## Race proportions
+
+Black/African American and Other/Multiple racial groups have higher representation in the 'High Mania' class (Class 1), while White and Asian individuals are more prevalent in the 'Minimal/ No Symptoms' class (Class 4).
+
+```{r, error=FALSE}
+merge0 %>%
+  filter(!is.na(race)) %>%
+  mutate(class=as.factor(class)) %>%
+  ggplot(aes(x=class,fill=class))+
+  geom_bar(position="fill",aes(fill=race))+
+  scale_y_continuous(labels=scales::percent)+
+  theme(legend.title = element_blank())
+```
+
+  
+Variability within Classes
+
+There is quite a big range in each class.
+
+The highest mania class goes all the way from 0-30, and spans the entire range of the PGBI-10-M
+
+```{r, error=FALSE}
+class1 = merge %>% filter(class==1)
+table(class1$pgbi_p_ss_score)
+```
+
+The moderate mania class has scores ranging from 0-23.
+```{r, error=FALSE}
+class2 = merge %>% filter(class==2)
+table(class2$pgbi_p_ss_score)
+```
+
+The low mania class has scores ranging from 0-18.
+```{r, error=FALSE}
+class3 = merge %>% filter(class==3)
+table(class3$pgbi_p_ss_score)
+```
+
+The minimal/no symptoms mania class has scores ranging from 0-13.
+```{r, error=FALSE}
+class4 = merge %>% filter(class==4)
+table(class4$pgbi_p_ss_score)
+```
+

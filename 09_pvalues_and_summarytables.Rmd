@@ -1,0 +1,942 @@
+
+---
+title: "Mania_Modelling"
+author: "by_Jasmin_Doenicke"
+date: "Step 9"
+output:
+  html_document:
+    toc: yes
+    theme: united
+  word_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+# STARTER Code
+```{r setup, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "E:/Masterarbeit")
+getwd()
+
+# turn off all warning messages
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+```{r, echo = FALSE, message = FALSE}
+library(tidyverse)
+library(janitor)
+library(effectsize)
+library(MplusAutomation)
+
+
+#set working directory
+setwd("E:/Masterarbeit")
+
+#set theme
+theme_set(theme_bw())
+```
+
+# Read In Risk Factors
+
+
+## Sleep
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/01_sleep.out', header=F,skip=531,sep=" ")
+
+sleep<-data[c(2,14,26),c(5, 19,25,30,36)]
+sleep<-sleep %>% mutate(across(2:5,as.numeric))
+sleep<-sleep %>% remove_empty()
+colnames(sleep)<-c("var",'est','se','t','p')
+
+
+sleep<-sleep %>% mutate(class=c("1","2",'3'))
+
+sleep
+```
+
+## IBS
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/02_ibs.out', header = FALSE ,skip=531,sep=" ")
+ibs<-data[c(2,13,24),c(5:39)]
+ibs <- data[c(2,13,24), c(5, 21, 27, 32, 33, 38, 39)]
+ibs <- ibs %>%
+  mutate(across(2:7, as.numeric))
+
+
+# Combine columns by removing NAs
+ibs$C45 <- ifelse(!is.na(ibs$V32), ibs$V32, ibs$V33)
+ibs$C67 <- ifelse(!is.na(ibs$V38), ibs$V38, ibs$V39)
+
+# Reorder columns to place the new column in the original position of Column 1 and 2
+#ibs <- ibs[, c("Column1and2", setdiff(names(data), c("Column1", "Column2")))]
+
+# Remove the original columns
+ibs <- ibs[, !names(ibs) %in% c("V32", "V33", "V38", "V39")]
+
+
+
+colnames(ibs)<-c("var",'est','se','t','p')
+ibs<-ibs %>% mutate(class=c("1","2",'3'))
+
+ibs
+```
+
+## Asthma
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/03_asthma.out', header = FALSE ,skip=531,sep=" ")
+
+asthma<-data[c(2,14,26),c(5:37)]
+asthma<-data[c(2,14,26),c(5,18, 24,30, 36)]
+asthma<-asthma %>% mutate(across(2:5,as.numeric))
+colnames(asthma)<-c("var",'est','se','t','p')
+
+
+asthma<-asthma %>% mutate(class=c("1","2",'3'))
+
+asthma
+```
+
+## BMI
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/04_bmi.out', header = FALSE ,skip=531,sep=" ")
+
+bmi<-data[c(2,13,24),c(5:ncol(data))]
+bmi<-data[c(2,13,24),c(5, 21, 27, 33, 39)]
+bmi<-bmi %>% mutate(across(2:5,as.numeric))
+colnames(bmi)<-c("var",'est','se','t','p')
+
+
+bmi<-bmi %>% mutate(class=c("1","2",'3'))
+
+bmi
+```
+
+## Preg
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/05_preg.out', header = FALSE ,skip=531,sep=" ")
+
+preg<-data[c(2,13,24),c(5:ncol(data))]
+preg<-data[c(2,13,24),c(5, 20, 26, 32, 38)]
+preg<-preg %>% mutate(across(2:5,as.numeric))
+colnames(preg)<-c("var",'est','se','t','p')
+
+
+preg<-preg %>% mutate(class=c("1","2",'3'))
+
+preg
+```
+
+## Obst
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/06_obst.out', header = FALSE ,skip=531,sep=" ")
+
+obst<-data[c(2,13,24),c(5:ncol(data))]
+obst<-data[c(2,13,24),c(5, 20, 26, 32, 38)]
+obst<-obst %>% mutate(across(2:5,as.numeric))
+colnames(obst)<-c("var",'est','se','t','p')
+
+
+obst<-obst %>% mutate(class=c("1","2",'3'))
+
+obst
+```
+
+## Premat
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/07_premat.out', header = FALSE ,skip=531,sep=" ")
+
+premat<-data[c(2,14,26),c(5:ncol(data))]
+premat<-data[c(2,14,26),c(5, 17, 23, 28, 34)]
+premat<-premat %>% mutate(across(2:5,as.numeric))
+colnames(premat)<-c("var",'est','se','t','p')
+
+
+premat<-premat %>% mutate(class=c("1","2",'3'))
+
+premat
+```
+
+## Small
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/08_small.out', header = FALSE ,skip=531,sep=" ")
+
+small<-data[c(2,14,26),c(5:ncol(data))]
+small<-data[c(2,14,26),c(5, 18, 24, 29, 35)]
+small<-small %>% mutate(across(2:5,as.numeric))
+colnames(small)<-c("var",'est','se','t','p')
+
+
+small<-small %>% mutate(class=c("1","2",'3'))
+
+small
+```
+
+## C-Sect
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/09_csect.out', header = FALSE ,skip=531,sep=" ")
+
+csect<-data[c(2,14,26),c(5:ncol(data))]
+csect<-data[c(2,14,26),c(5, 18, 19, 24, 25, 29, 31, 35, 37)]
+csect<-csect %>% mutate(across(2:9,as.numeric))
+
+
+# Combine columns by removing NAs
+csect$C18_19 <- ifelse(!is.na(csect$V18), csect$V18, csect$V19)
+csect$C24_25 <- ifelse(!is.na(csect$V24), csect$V24, csect$V25)
+csect$C29_31 <- ifelse(!is.na(csect$V29), csect$V29, csect$V31)
+csect$C35_37 <- ifelse(!is.na(csect$V35), csect$V35, csect$V37)
+
+# Remove the original columns
+csect <- csect[, !names(csect) %in% c("V18", "V19", "V24", "V25", "V29", "V31", "V35", "V37")]
+
+
+colnames(csect)<-c("var",'est','se','t','p')
+csect<-csect %>% mutate(class=c("1","2",'3'))
+
+csect
+```
+
+
+## Depress
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/10_depress.out', header = FALSE ,skip=534,sep=" ")
+
+depress<-data[c(2,14,27),c(5:ncol(data))]
+depress<-data[c(2,14,27),c(5, 17, 23, 28, 34)]
+depress<-depress %>% mutate(across(2:5,as.numeric))
+colnames(depress)<-c("var",'est','se','t','p')
+
+
+depress<-depress %>% mutate(class=c("1","2",'3'))
+
+depress
+```
+
+## Anx
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/11_anx.out', header = FALSE ,skip=531,sep=" ")
+
+anx<-data[c(2,13,24),c(5:ncol(data))]
+anx<-data[c(2,13,24),c(5, 21, 27, 32, 38)]
+anx<-anx %>% mutate(across(2:5,as.numeric))
+colnames(anx)<-c("var",'est','se','t','p')
+
+
+anx<-anx %>% mutate(class=c("1","2",'3'))
+
+anx
+```
+
+## ADHD
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/12_adhd.out', header = FALSE ,skip=531,sep=" ")
+
+adhd<-data[c(2,13,24),c(5:ncol(data))]
+adhd<-data[c(2,13,24),c(5, 20, 26, 31, 37)]
+adhd<-adhd %>% mutate(across(2:5,as.numeric))
+colnames(adhd)<-c("var",'est','se','t','p')
+
+
+adhd<-adhd %>% mutate(class=c("1","2",'3'))
+
+adhd
+```
+
+## Opposit
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/13_opposit.out', header = FALSE ,skip=534,sep=" ")
+
+opposit<-data[c(2,13,24),c(5:ncol(data))]
+opposit<-data[c(2,13,24),c(5, 17, 23, 28, 34)]
+opposit<-opposit %>% mutate(across(2:5,as.numeric))
+colnames(opposit)<-c("var",'est','se','t','p')
+
+
+opposit<-opposit %>% mutate(class=c("1","2",'3'))
+
+opposit
+```
+
+
+## Conduct
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/14_conduct.out', header = FALSE ,skip=534,sep=" ")
+
+conduct<-data[c(2,13,24),c(5:ncol(data))]
+conduct<-data[c(2,13,24),c(5, 17, 23, 28, 34)]
+conduct<-conduct %>% mutate(across(2:5,as.numeric))
+colnames(conduct)<-c("var",'est','se','t','p')
+
+
+conduct<-conduct %>% mutate(class=c("1","2",'3'))
+
+conduct
+```
+
+## Stress
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/15_stress.out', header = FALSE ,skip=531,sep=" ")
+
+stress<-data[c(2,13,24),c(5:ncol(data))]
+stress<-data[c(2,13,24),c(5, 18, 24, 29, 35)]
+stress<-stress %>% mutate(across(2:5,as.numeric))
+colnames(stress)<-c("var",'est','se','t','p')
+
+
+stress<-stress %>% mutate(class=c("1","2",'3'))
+
+stress
+```
+
+## Verbal Learning
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/16_ravlt.out', header = FALSE ,skip=531,sep=" ")
+
+ravlt<-data[c(2,14,26),c(5:ncol(data))]
+ravlt<-data[c(2,14,26),c(5, 18, 19, 24, 25, 29, 31, 35, 37)]
+ravlt<-ravlt %>% mutate(across(2:9,as.numeric))
+
+
+# Combine columns by removing NAs
+ravlt$C18_19 <- ifelse(!is.na(ravlt$V18), ravlt$V18, ravlt$V19)
+ravlt$C24_25 <- ifelse(!is.na(ravlt$V24), ravlt$V24, ravlt$V25)
+ravlt$C29_31 <- ifelse(!is.na(ravlt$V29), ravlt$V29, ravlt$V31)
+ravlt$C35_37 <- ifelse(!is.na(ravlt$V35), ravlt$V35, ravlt$V37)
+# Remove the original columns
+ravlt <- ravlt[, !names(ravlt) %in% c("V18", "V19", "V24", "V25", "V29", "V31", "V35", "V37")]
+
+
+colnames(ravlt)<-c("var",'est','se','t','p')
+ravlt<-ravlt %>% mutate(class=c("1","2",'3'))
+
+ravlt
+```
+
+## Family Conflict - Parents
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/17_fes_p.out', header = FALSE ,skip=531,sep=" ")
+
+fes_p<-data[c(2,14,26),c(5:ncol(data))]
+fes_p<-data[c(2,14,26),c(5, 19, 25, 30, 36)]
+fes_p<-fes_p %>% mutate(across(2:5,as.numeric))
+colnames(fes_p)<-c("var",'est','se','t','p')
+
+
+fes_p<-fes_p %>% mutate(class=c("1","2",'3'))
+
+fes_p
+```
+
+## Family Conflict - Youth
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/18_fes_y.out', header = FALSE ,skip=531,sep=" ")
+
+fes_y<-data[c(2,14,26),c(5:ncol(data))]
+fes_y<-data[c(2,14,26),c(5, 19, 25, 31, 37)]
+fes_y<-fes_y %>% mutate(across(2:5,as.numeric))
+colnames(fes_y)<-c("var",'est','se','t','p')
+
+
+fes_y<-fes_y %>% mutate(class=c("1","2",'3'))
+
+fes_y
+```
+
+## Trauma
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/19_trauma.out', header = FALSE ,skip=531,sep=" ")
+
+trauma<-data[c(2,14,26),c(5:ncol(data))]
+trauma<-data[c(2,14,26),c(5, 18, 24, 30, 36)]
+trauma<-trauma %>% mutate(across(2:5,as.numeric))
+colnames(trauma)<-c("var",'est','se','t','p')
+
+
+trauma<-trauma %>% mutate(class=c("1","2",'3'))
+
+trauma
+```
+
+## Maltreatment
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/20_maltr.out', header = FALSE ,skip=531,sep=" ")
+
+maltr<-data[c(2,14,26),c(5:ncol(data))]
+maltr<-data[c(2,14,26),c(5, 19, 25, 31, 37)]
+maltr<-maltr %>% mutate(across(2:5,as.numeric))
+colnames(maltr)<-c("var",'est','se','t','p')
+
+
+maltr<-maltr %>% mutate(class=c("1","2",'3'))
+
+maltr
+```
+
+## First Degree Relatives
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/with_covariates/21_first_d.out', header = FALSE ,skip=534,sep=" ")
+
+first_d<-data[c(2,14,26),c(5:ncol(data))]
+first_d<-data[c(2,14,26),c(5, 17, 23, 29, 35)]
+first_d<-first_d %>% mutate(across(2:5,as.numeric))
+colnames(first_d)<-c("var",'est','se','t','p')
+
+
+first_d<-first_d %>% mutate(class=c("1","2",'3'))
+
+first_d
+```
+
+
+## Merge
+
+```{r}
+#now bind them together
+pvals<-rbind(sleep, ibs, asthma, bmi,
+preg, obst, premat, small, csect, depress, anx, adhd, opposit, conduct, stress, ravlt, fes_p, fes_y, trauma, maltr, first_d)
+#correct for multiple comparisons using 'fdr' correction.
+pvals<-pvals %>% mutate(q=p.adjust(p,method='fdr'),
+                        sig=case_when(q<=0.05&q>0.01~"*",
+                                      q<=0.01&q>0.001~"**",
+                                      q<=0.001~"***",
+                                      q>0.05~""))
+
+#save
+#save(pvals,file='data/2024114_4class_totalpvals_corrected.rdata')
+#write.csv(pvals,file='outputs/20241114_4class_totalpvals_corrected.csv')
+```
+
+The p-column is the original p-value.  
+The q-column is the corrected p-value.   
+The sig column tells you if the q value is significant with asterisks ***.    
+```{r}
+pvals
+```
+
+
+
+
+
+# Read in Sleep
+
+for post-hoc analysis 
+
+## Dims
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/sleep/01_dims.out', header = FALSE ,skip=526,sep=" ")
+
+dims<-data[c(2,14,26),c(5:ncol(data))]
+dims<-data[c(2,14,26),c(5, 20, 26, 31, 37)]
+dims<-dims %>% mutate(across(2:5,as.numeric))
+colnames(dims)<-c("var",'est','se','t','p')
+
+
+dims<-dims %>% mutate(class=c("1","2",'3'))
+```
+
+## SBD
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/sleep/02_sbd.out', header = FALSE ,skip=526,sep=" ")
+
+sbd<-data[c(2,13,25),c(5:ncol(data))]
+sbd<-data[c(2,13,25),c(5, 21, 27, 32, 33, 38)]
+sbd<-sbd %>% mutate(across(2:6,as.numeric))
+
+sbd$V32_33 <- c(11.014, 9.571, 2.658) 
+sbd$NV38 <- c(0.000, 0.000, 0.008) # I checked this in the Mplus Out-file
+sbd <- sbd[, !names(sbd) %in% c("V32", "V33", "V38")] # Remove the original columns
+
+
+colnames(sbd)<-c("var",'est','se','t','p')
+sbd<-sbd %>% mutate(class=c("1","2",'3'))
+
+sbd
+```
+
+## DA
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/sleep/03_da.out', header = FALSE ,skip=526,sep=" ")
+
+da<-data[c(2,13,24),c(5:ncol(data))]
+da<-data[c(2,13,24),c(5, 22, 28, 33, 34, 39)]
+da<-da %>% mutate(across(2:6,as.numeric))
+
+da$V33_34 <- c(16.034, 11.759, 4.570) 
+da$N39 <- sprintf("%.3f", c(0.000, 0.000, 0.000)) # I checked this in Mplus
+da <- da[, !names(da) %in% c("V33", "V34", "V39")] # Remove the original columns
+
+
+colnames(da)<-c("var",'est','se','t','p')
+da<-da %>% mutate(class=c("1","2",'3'))
+
+da
+```
+
+## SWTD
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/sleep/04_swtd.out', header = FALSE ,skip=526,sep=" ")
+
+swtd<-data[c(2,14,26),c(5:ncol(data))]
+swtd<-data[c(2,14,26),c(5, 20, 26, 31, 32, 37)]
+swtd<-swtd %>% mutate(across(2:6,as.numeric))
+
+swtd$V31_32 <- c(18.092, 17.016, 7.374) 
+swtd$N37 <- sprintf("%.3f", c(0.000, 0.000, 0.000)) # I checked this in Mplus
+swtd <- swtd[, !names(swtd) %in% c("V31", "V32", "V37")] # Remove the original columns
+
+
+colnames(swtd)<-c("var",'est','se','t','p')
+swtd<-swtd %>% mutate(class=c("1","2",'3'))
+
+swtd
+```
+
+## DOES
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/sleep/05_does.out', header = FALSE ,skip=526,sep=" ")
+
+does<-data[c(2,14,26),c(5:ncol(data))]
+does<-data[c(2,14,26),c(5, 20, 26, 31, 32, 37)]
+does<-does %>% mutate(across(2:6,as.numeric))
+
+does$V31_32 <- c(12.204, 17.439, 8.216) 
+does$N37 <- sprintf("%.3f", c(0.000, 0.000, 0.000)) # I checked this in Mplus
+does <- does[, !names(does) %in% c("V31", "V32", "V37")] # Remove the original columns
+
+
+colnames(does)<-c("var",'est','se','t','p')
+does<-does %>% mutate(class=c("1","2",'3'))
+
+does
+```
+
+## Shy
+```{r}
+data <- read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/sleep/06_shy.out', header = FALSE ,skip=526,sep=" ")
+
+shy<-data[c(2,13,24),c(5:ncol(data))]
+shy<-data[c(2,13,24),c(5, 21, 27, 33, 39)]
+shy<-shy %>% mutate(across(2:5,as.numeric))
+colnames(shy)<-c("var",'est','se','t','p')
+
+
+shy<-shy %>% mutate(class=c("1","2",'3'))
+
+shy
+```
+
+
+
+## Merge
+```{r}
+riskfactors_sleep = rbind(dims, sbd, da, swtd, does, shy)
+
+#correct for multiple comparisons using 'fdr' correction.
+riskfactors_sleep<-riskfactors_sleep %>% mutate(q=p.adjust(p,method='fdr'),
+                        sig=case_when(q<=0.05&q>0.01~"*",
+                                      q<=0.01&q>0.001~"**",
+                                      q<=0.001~"***",
+                                      q>0.05~""))
+#the p-column is the original p-value
+#the q-column is the corrected p-value
+#the sig column tells you if the q value is significant with asterisks ***
+
+#save
+#save(riskfactors_sleep,file='data/2024114_pvalue_sleep_corrected.rdata')
+#write.csv(riskfactors_sleep,file='outputs/20241114_pvalue_sleep_corrected.csv')
+```
+
+The p-column is the original p-value.  
+The q-column is the corrected p-value.  
+The sig column tells you if the q value is significant with asterisks ***.  
+
+```{r}
+riskfactors_sleep
+```
+
+# Demographics Only
+
+### Sex
+```{r}
+data<-read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/without_covariates/01_sex.out', header=F,skip=519,sep=" ")   # skip rows before reading in data (check in Excel)
+
+sex <- data[c(6,8,10), c(5,20:39)]
+sex <- sex %>% remove_empty()
+
+library(dplyr)
+sex <- sex %>%
+  mutate(across(c("V20", "V21", "V26", "V27", "V31", "V33", "V37", "V39", 
+                  "V22", "V23", "V28", "V29", "V30", "V32", "V34", "V36"), as.numeric))
+
+
+# Combine columns by removing NAs
+sex$N1 <- ifelse(!is.na(sex$V20), sex$V20, sex$V21)
+sex$N2 <- ifelse(!is.na(sex$V26), sex$V26, sex$V27)
+sex$N3 <- ifelse(!is.na(sex$V31), sex$V31, sex$V33)
+sex$N4 <- ifelse(!is.na(sex$V37), sex$V37, sex$V39)
+
+# Remove the original columns
+sex <- sex[, !names(sex) %in% c("V20", "V21", "V26", "V27", "V31", "V31", "V33", "V37", "V39", "V22", "V23", "V28", "V29", "V30", "V32", "V34", "V36", "V39")]
+colnames(sex)<-c("var",'est','se','t','p')
+sex <-sex %>% mutate(class=c("1","2",'3'))
+
+sex
+```
+
+### Race
+```{r}
+## BLACK
+data<-read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/without_covariates/02a_race_b.out', header=F,skip=529,sep=" ")   # skip rows before reading in data (check in Excel)
+race_b <- data[c(3,5,7), c(5,15:36)]
+race_b <- race_b %>% remove_empty()
+race_b <- race_b[, !names(race_b) %in% c(paste0("V", 19:23), paste0("V", 27:29), paste0("V", 31:34))]
+colnames(race_b)<-c("var",'est','se','t','p')
+race_b <- race_b %>% mutate(class=c("1","2",'3'))
+
+## American Indian/ Alaskan
+data<-read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/without_covariates/02b_race_ai.out', header=F,skip=529,sep=" ")   # skip rows before reading in data (check in Excel)
+race_ai <- data[c(3,5,7), c(5,17:35)]
+race_ai <- race_ai %>% remove_empty()
+race_ai <- race_ai[, !names(race_ai) %in% c(paste0("V", 18:22), paste0("V", 24:28), paste0("V", 30:34))]
+colnames(race_ai)<-c("var",'est','se','t','p')
+race_ai <- race_ai %>% mutate(class=c("1","2",'3'))
+
+## Pacific
+data<-read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/without_covariates/02c_race_p.out', header=F,skip=529,sep=" ")   # skip rows before reading in data (check in Excel)
+race_p <- data[c(3,5,7), c(5,16:36)]
+race_p <- race_p %>% mutate(across(V16:V36, as.numeric))
+race_p <- race_p %>% remove_empty()
+race_p <- race_p %>%
+  mutate(
+    N1 = coalesce(V16, V17, V18),
+    N2 = coalesce(V22, V23, V24),
+    N3 = coalesce(V26, V28, V30),
+    N4 = coalesce(V32, V34, V36)
+  )
+race_p <- race_p[, !names(race_p) %in% c(paste0("V", 16:36))]
+colnames(race_p)<-c("var",'est','se','t','p')
+race_p <- race_p %>% mutate(class=c("1","2",'3'))
+
+## Asian
+data<-read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/without_covariates/02d_race_as.out', header=F,skip=529,sep=" ")   # skip rows before reading in data (check in Excel)
+race_as <- data[c(3,5,7), c(5,16:34)]
+race_as <- race_as %>% mutate(across(V16:V34, as.numeric))
+race_as <- race_as %>% remove_empty()
+colnames(race_as)<-c("var",'est','se','t','p')
+race_as <- race_as %>% mutate(class=c("1","2",'3'))
+
+## Other/ Multiple
+data<-read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/without_covariates/02e_race_o.out', header=F,skip=529,sep=" ")   # skip rows before reading in data (check in Excel)
+race_o <- data[c(3,5,7), c(5,18:36)]
+race_o <- race_o %>% mutate(across(V18:V36, as.numeric))
+race_o <- race_o %>% remove_empty()
+colnames(race_o)<-c("var",'est','se','t','p')
+race_o <- race_o %>% mutate(class=c("1","2",'3'))
+
+race_o
+
+race_as
+
+race_b
+
+race_ai
+
+race_p
+```
+
+### Ethnicity
+```{r}
+data<-read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/without_covariates/03_ethn.out', header=F,skip=529,sep=" ")   # skip rows before reading in data (check in Excel)
+ethn <- data[c(3,5,7), c(5,20:38)]
+ethn <- ethn %>% mutate(across(V20:V38, as.numeric))
+ethn <- ethn %>% remove_empty()
+colnames(ethn)<-c("var",'est','se','t','p')
+ethn <- ethn %>% mutate(class=c("1","2",'3'))
+
+ethn
+```
+
+### Income-to-Needs
+```{r}
+data<-read.delim('E:/Masterarbeit/code/MPLUS/20241107_risk_predictors_NEW/without_covariates/04_inr.out', header=F,skip=529,sep=" ")   # skip rows before reading in data (check in Excel)
+inr <- data[c(3,5,7), c(5,20:37)]
+inr <- inr %>% mutate(across(V20:V37, as.numeric))
+inr <- inr %>% remove_empty()
+colnames(inr)<-c("var",'est','se','t','p')
+inr <- inr %>% mutate(class=c("1","2",'3'))
+
+inr
+```
+
+
+## Merge
+```{r}
+demographics_only = rbind(sex, race_ai, race_as, race_b, race_o, race_p, inr, ethn)
+
+#correct for multiple comparisons using 'fdr' correction.
+demographics_only<-demographics_only %>% mutate(q=p.adjust(p,method='fdr'),
+                        sig=case_when(q<=0.05&q>0.01~"*",
+                                      q<=0.01&q>0.001~"**",
+                                      q<=0.001~"***",
+                                      q>0.05~""))
+#save
+#save(demographics_only,file='data/20250213_pvalue_demographics_corrected.rdata')
+#write.csv(demographics_only,file='outputs/20250213_pvalue_demographics_corrected.csv')
+```
+
+The p-column is the original p-value.  
+The q-column is the corrected p-value.  
+The sig column tells you if the q value is significant with asterisks ***.
+```{r}
+demographics_only
+```
+
+
+# OR-Table Risk Table - Main Analysis
+```{r}
+# Load Data
+load("E:/Masterarbeit/data/riskfactors_with_covariates_FINAL.rdata") # ORs
+load("E:/Masterarbeit/data/2024114_4class_totalpvals_corrected.rdata") # p-values
+
+# Make "class" a factor, merge by class and var
+pvals$class = as.factor(pvals$class)
+riskfactors_with_covariates_FINAL$class = as.factor(riskfactors_with_covariates_FINAL$class)
+table<-inner_join(riskfactors_with_covariates_FINAL,pvals) # Joining with `by = join_by(var, class)`
+
+
+
+#remove the 99th & 90th percentiles, and cohen's d values, and round variables to 3 decimal places
+tab1<-table %>% 
+  select(!c(contains("99"),contains("90"),contains("_d"),est,se,t)) %>%
+  mutate(across(lower_95:upper_95,~round(.x,2)),
+         q=round(q,3))
+
+#create merged 95% CI column
+tab1<-tab1 %>% unite(CI_95,c('lower_95','upper_95'),sep='-') %>%
+  select(var,class,OR,CI_95,p,q,sig)
+
+#pivot rows to columns
+tab2<-tab1 %>% pivot_wider(names_from=class,values_from=c('OR','CI_95','p','q','sig'))
+
+#select only variables you want (odds ratio class 1, 95% CI class 1, sig class 1; odds ratio class 2, 95% CI class 2, sig class 2 and so on)
+#also include q variable for each class if you wish
+tab2<-tab2 %>% select(var,contains('OR_1'),contains('CI_95_1'),contains('q_1'), contains('sig_1'),
+                      contains('OR_2'),contains('CI_95_2'),contains('q_2'), contains('sig_2'),
+                      contains('OR_3'),contains('CI_95_3'),contains('q_3'), contains('sig_3'))
+tab2<-tab2 %>% mutate(var=case_when(var=='SLEEP'~"Sleep Disturbances",
+                                    var=="IBS"~'Irritable Bowel Symptoms',
+                                    var=="ASTHMA"~'Asthma',
+                                    var=="BMI"~"BMI",
+                                    var=="PREG"~'Pregnancy Complications',
+                                    var=='OBST'~'Obstetric Complications',
+                                    var=='PREMAT'~'Premature Birth',
+                                    var=='SMALL'~'Small at Birth',
+                                    var=='CSECT'~"C-Section",
+                                    var=='DEPRESS'~"Depression",
+                                    var=='ANX'~"Anxiety",
+                                    var=='ADHD'~"ADHD", 
+                                    var=='OPPOSIT'~"Oppositional Defiant Symptoms",
+                                    var=="CONDUCT"~"Conduct Symptoms",
+                                    var=="STRESS"~"Stress",
+                                    var=='RAVLT'~'Verbal Learning',
+                                    var=='FES_P'~'Family Conflict - Parent',
+                                    var=='FES_Y'~'Family Conflict - Youth',
+                                    var=='TRAUMA'~'Trauma',
+                                    var=='MALTR'~'Maltreatment',
+                                    var=='FIRST_D'~'First-Degree Relatives'))
+
+
+#merge sig *** and ORs together with unite() command
+tab3<-tab2 %>% unite(OR_1,c('OR_1','sig_1'),sep='') %>%
+  unite(`OR_2`,c('OR_2','sig_2'),sep='') %>%
+  unite(`OR_3`,c('OR_3','sig_3'),sep='')
+tab3 <- tab3 %>% select(-q_1, -q_2, -q_3)
+
+#save table3 as a csv
+#write.csv(tab3,file="E:/Masterarbeit/outputs/20241114_short_ORtable.csv",row.names=F)
+#write.csv(tab2,file="E:/Masterarbeit/outputs/20241114_long_ORtable.csv",row.names=F)
+
+# save it as a table - long table
+#library(flextable)
+#library(officer)
+#table <- flextable(tab2)
+#doc <- read_docx() %>%
+#  body_add_flextable(table)
+#print(doc, target = "E:/Masterarbeit/outputs/OR_p_table.docx")
+
+# save it as a table - short table
+#table <- flextable(tab3)
+#doc <- read_docx() %>%
+#  body_add_flextable(table)
+#print(doc, target = "E:/Masterarbeit/outputs/OR_p_table_short.docx")
+```
+
+Let's examine the long table. For a clearer view, refer to Table 2 in my Master's thesis—it's the same table. I used the more concise version (tab3) for simplicity.
+
+```{r}
+tab2
+```
+
+Let's examine the short table. For a clearer view, refer to Table 2 in my Master's thesis—it's the exact same table!
+
+```{r}
+tab3
+```
+
+
+# OR Risk Table - Sleep
+```{r}
+load("data/riskfactors_sleep_FINAL.rdata") # ORs
+load("data/2024114_pvalue_sleep_corrected.rdata") # p-values
+
+# Make "class" a factor, merge by class and var
+riskfactors_sleep$class = as.factor(riskfactors_sleep$class)
+riskfactors_sleep_FINAL$class = as.factor(riskfactors_sleep_FINAL$class)
+table<-inner_join(riskfactors_sleep,riskfactors_sleep_FINAL) # Joining with `by = join_by(var, class)`
+
+
+
+#remove the 99th & 90th percentiles, and cohen's d values, and round variables to 3 decimal places
+tab1<-table %>% 
+  select(!c(contains("99"),contains("90"),contains("_d"),est,se,t)) %>%
+  mutate(across(lower_95:upper_95,~round(.x,2)),
+         q=round(q,3))
+
+#create merged 95% CI column
+tab1<-tab1 %>% unite(CI_95,c('lower_95','upper_95'),sep='-') %>%
+  select(var,class,OR,CI_95,p,q,sig)
+
+#pivot rows to columns
+tab2<-tab1 %>% pivot_wider(names_from=class,values_from=c('OR','CI_95','p','q','sig'))
+
+#select only variables you want (odds ratio class 1, 95% CI class 1, sig class 1; odds ratio class 2, 95% CI class 2, sig class 2 and so on)
+#also include q variable for each class if you wish
+tab2<-tab2 %>% select(var,contains('OR_1'),contains('CI_95_1'),contains('q_1'), contains('sig_1'),
+                      contains('OR_2'),contains('CI_95_2'),contains('q_2'), contains('sig_2'),
+                      contains('OR_3'),contains('CI_95_3'),contains('q_3'), contains('sig_3'))
+tab2<-tab2 %>% mutate(var=case_when(var=='DIMS'~"Disorders of Initiating and Maintaining Sleep",
+                                    var=="SBD"~'Sleep Breathing Disorders',
+                                    var=="DA"~'Disorder of Arousal ',
+                                    var=="SWTD"~"Sleep-Wake transition Disorders",
+                                    var=="DOES"~'Disorders of Excessive Somnolence',
+                                    var=='SHY'~'Sleep Hyperhydrosis'))
+
+
+#merge sig *** and ORs together with unite() command
+tab3<-tab2 %>% unite(OR_1,c('OR_1','sig_1'),sep='') %>%
+  unite(`OR_2`,c('OR_2','sig_2'),sep='') %>%
+  unite(`OR_3`,c('OR_3','sig_3'),sep='')
+tab3 <- tab3 %>% select(-q_1, -q_2, -q_3)
+
+#save table2 and table3 as a csv
+#write.csv(tab3,file="E:/Masterarbeit/outputs/20241114_short_ORtable_SLEEP.csv",row.names=F)
+#write.csv(tab2,file="E:/Masterarbeit/outputs/20241114_long_ORtable_SLEEP.csv",row.names=F)
+
+# save it as a table - long table
+#library(flextable)
+#library(officer)
+#table <- flextable(tab2)
+#doc <- read_docx() %>%
+#  body_add_flextable(table)
+#print(doc, target = "E:/Masterarbeit/outputs/OR_p_table_long_SLEEP.docx")
+
+# save it as a table - short table
+#table <- flextable(tab3)
+#doc <- read_docx() %>%
+#  body_add_flextable(table)
+#print(doc, target = "E:/Masterarbeit/outputs/OR_p_table_short_SLEEP.docx")
+```
+
+Let's examine the long table. For a clearer view, refer to Supplemental Table 5 in my Master's  — it's the same table. I used the more concise version (tab3) for simplicity.
+
+```{r}
+tab2
+```
+
+Let's examine the short table. For a clearer view, refer to Supplemental Table 5 in my Master's  — it's the exact same table. 
+
+```{r}
+tab3
+```
+
+# OR risk table demographics only
+```{r}
+load("data/demographics_without_covariates_FINAL.rdata") # ORs
+load("data/20250213_pvalue_demographics_corrected.rdata") # p-values
+
+# Make "class" a factor, merge by class and var
+demographics_without_covariates_FINAL$class = as.factor(demographics_without_covariates_FINAL$class)
+demographics_only$class = as.factor(demographics_only$class)
+table<-inner_join(demographics_without_covariates_FINAL,demographics_only) # Joining with `by = join_by(var, class)`
+
+
+
+#remove the 99th & 90th percentiles, and cohen's d values, and round variables to 3 decimal places
+tab1<-table %>% 
+  select(!c(contains("99"),contains("90"),contains("_d"),est,se,t)) %>%
+  mutate(across(lower_95:upper_95,~round(.x,2)),
+         q=round(q,3))
+
+#create merged 95% CI column
+tab1<-tab1 %>% unite(CI_95,c('lower_95','upper_95'),sep='-') %>%
+  select(var,class,OR,CI_95,p,q,sig)
+
+#pivot rows to columns
+tab2<-tab1 %>% pivot_wider(names_from=class,values_from=c('OR','CI_95','p','q','sig'))
+
+#select only variables you want (odds ratio class 1, 95% CI class 1, sig class 1; odds ratio class 2, 95% CI class 2, sig class 2 and so on)
+#also include q variable for each class if you wish
+tab2<-tab2 %>% select(var,contains('OR_1'),contains('CI_95_1'),contains('q_1'), contains('sig_1'),
+                      contains('OR_2'),contains('CI_95_2'),contains('q_2'), contains('sig_2'),
+                      contains('OR_3'),contains('CI_95_3'),contains('q_3'), contains('sig_3'))
+
+tab2<-tab2 %>% mutate(var=case_when(var=='SEX'~"Sex",
+                                    var=="RACE_B"~'Race: Black',
+                                    var=="RACE_AS"~'Race: Asian',
+                                    var=="RACE_P"~"Race: Pacific",
+                                    var=="RACE_AI"~'Race: American Indian/Alaskan',
+                                    var=="RACE_O"~'Race: Other/Multiple',
+                                    var=='INR'~'Socioeconomic Status',
+                                    var=='ETHN'~'Hispanic Ethnicity'))
+
+
+#merge sig *** and ORs together with unite() command
+tab3<-tab2 %>% unite(OR_1,c('OR_1','sig_1'),sep='') %>%
+  unite(`OR_2`,c('OR_2','sig_2'),sep='') %>%
+  unite(`OR_3`,c('OR_3','sig_3'),sep='')
+tab3 <- tab3 %>% select(-q_1, -q_2, -q_3)
+
+#save table2 and table3 as a csv
+#write.csv(tab3,file="E:/Masterarbeit/outputs/20250213_short_ORtable_DEMOGRAPHICS.csv",row.names=F)
+#write.csv(tab2,file="E:/Masterarbeit/outputs/20250213_long_ORtable_DEMOGRAPHICS.csv",row.names=F)
+
+# save it as a table - long table
+#library(flextable)
+#library(officer)
+#table <- flextable(tab2)
+#doc <- read_docx() %>%
+#  body_add_flextable(table)
+#print(doc, target = "E:/Masterarbeit/outputs/OR_p_table_long_DEMORAPHICS.docx")
+
+# save it as a table - short table
+#table <- flextable(tab3)
+#doc <- read_docx() %>%
+#  body_add_flextable(table)
+#print(doc, target = "E:/Masterarbeit/outputs/OR_p_table_short_DEMOGRAPHICS.docx")
+```
+
+Let's examine the long table. For a clearer view, refer to Table 2 in my Master's  — it's the same table. I used the more concise version (tab3) for simplicity.
+
+```{r}
+tab2
+```
+
+Let's examine the short table. For a clearer view, refer to Table 2 in my Master's  — it's the exact same table.
+
+```{r}
+tab3
+```
